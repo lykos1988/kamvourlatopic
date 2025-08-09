@@ -1,6 +1,5 @@
 /* ===========================
    Firebase αρχικοποίηση
-   (Βεβαιώσου ότι στο index.html έχεις τα sdk <script> πριν από αυτό το αρχείο)
    =========================== */
 const firebaseConfig = {
   apiKey: "AIzaSyAOTN20OrDBMIeXqgOeiEWwk__ylT9wOcQ",
@@ -51,7 +50,7 @@ const closeHelp = document.getElementById('closeHelp');
 
 let currentServiceId = null;
 let currentServiceForReview = null;
-let unsubscribeReviewsSnapshot = null; // για live updates των κριτικών όταν ανοίγει modal
+let unsubscribeReviewsSnapshot = null;
 
 /* ===========================
    Modal helpers
@@ -68,7 +67,7 @@ function closeModal(el) {
 }
 
 /* ===========================
-   Add / Edit Service UI
+   Add Service UI
    =========================== */
 btnAddService.addEventListener('click', () => {
   currentServiceId = null;
@@ -106,18 +105,11 @@ saveServiceBtn.onclick = async () => {
   }
 
   try {
-    if (currentServiceId) {
-      // update
-      await db.collection('services').doc(currentServiceId).update({
-        title, name, phone, email, website, desc, price, img
-      });
-    } else {
-      // add new
-      await db.collection('services').add({
-        title, name, phone, email, website, desc, price, img,
-        created: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
+    // Πάντα νέα υπηρεσία — όχι επεξεργασία
+    await db.collection('services').add({
+      title, name, phone, email, website, desc, price, img,
+      created: firebase.firestore.FieldValue.serverTimestamp()
+    });
     closeModal(serviceModal);
     alert('Η υπηρεσία αποθηκεύτηκε');
   } catch (err) {
@@ -127,29 +119,10 @@ saveServiceBtn.onclick = async () => {
 };
 
 /* ===========================
-   Delete Service (και διαγραφή κριτικών του)
+   Delete Service (απενεργοποιημένο)
    =========================== */
-deleteServiceBtn.onclick = async () => {
-  if (!currentServiceId) return;
-  if (!confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτή την υπηρεσία;')) return;
-
-  try {
-    // 1) Διαγραφή όλων των κριτικών που έχουν serviceId == currentServiceId
-    const reviewsSnap = await db.collection('reviews').where('serviceId', '==', currentServiceId).get();
-    const batch = db.batch();
-    reviewsSnap.forEach(doc => batch.delete(doc.ref));
-    // 2) Διαγραφή υπηρεσίας
-    const serviceRef = db.collection('services').doc(currentServiceId);
-    batch.delete(serviceRef);
-
-    await batch.commit();
-    closeModal(serviceModal);
-    alert('Η υπηρεσία και οι κριτικές της διαγράφηκαν');
-  } catch (err) {
-    console.error('Σφάλμα διαγραφής:', err);
-    alert('Παρουσιάστηκε σφάλμα κατά τη διαγραφή.');
-  }
-};
+// Κρύβουμε το κουμπί διαγραφής και αφαιρούμε το event
+deleteServiceBtn.style.display = 'none';
 
 /* ===========================
    Render Services (real-time)
@@ -176,7 +149,7 @@ function renderServicesFromArray(services) {
   servicesList.innerHTML = '';
 
   filtered.forEach(s => {
-    const reviewsForS = s._reviews || []; // may be injected when computing ratings
+    const reviewsForS = s._reviews || [];
     const reviewsCount = reviewsForS.length;
     const avgRating = reviewsCount ? (reviewsForS.reduce((sum,r)=>sum+(r.rating||0),0)/reviewsCount) : 0;
 
@@ -201,6 +174,7 @@ function renderServicesFromArray(services) {
       </div>
       <div class="actions">
         <button class="small book" data-id="${s.id}">Κριτικές</button>
+        <!-- Δεν υπάρχει κουμπί επεξεργασίας -->
         <button class="small share" data-title="${encodeURIComponent(s.title||'')}" data-desc="${encodeURIComponent(s.desc||'')}">Κοινή χρήση</button>
       </div>
     `;
@@ -208,22 +182,6 @@ function renderServicesFromArray(services) {
     // Κριτικές - άνοιγμα modal
     div.querySelector('.book').onclick = () => {
       openReviewsForService(s.id, s.title || '');
-    };
-
-    // Επεξεργασία
-    div.querySelector('.edit').onclick = () => {
-      currentServiceId = s.id;
-      document.getElementById('serviceModalTitle').textContent = 'Επεξεργασία Υπηρεσίας';
-      deleteServiceBtn.style.display = 'inline-block';
-      s_title.value = s.title || '';
-      s_name.value = s.name || '';
-      s_phone.value = s.phone || '';
-      s_email.value = s.email || '';
-      s_website.value = s.website || '';
-      s_desc.value = s.desc || '';
-      s_price.value = (typeof s.price === 'number') ? s.price : '';
-      s_img.value = s.img || '';
-      openModal(serviceModal);
     };
 
     // Share / copy
@@ -246,26 +204,21 @@ function renderServicesFromArray(services) {
    Load services + attach review counts (live)
    =========================== */
 function startServicesListener() {
-  // We'll listen services and also fetch all reviews (or listen them) to compute average rating locally.
-  // Simpler approach: listen services, and for each snapshot load reviews for those services.
   return db.collection('services').orderBy('created', 'desc').onSnapshot(async serviceSnap => {
     const services = [];
     serviceSnap.forEach(doc => services.push({ id: doc.id, ...doc.data() }));
 
-    // Collect service ids
     const serviceIds = services.map(s => s.id);
     if (serviceIds.length === 0) {
       renderServicesFromArray([]);
       return;
     }
 
-    // Query reviews for these services
     try {
       const reviewsSnap = await db.collection('reviews').where('serviceId', 'in', serviceIds).get();
       const reviews = [];
       reviewsSnap.forEach(rdoc => reviews.push({ id: rdoc.id, ...rdoc.data() }));
 
-      // attach reviews to services
       services.forEach(s => {
         s._reviews = reviews.filter(r => r.serviceId === s.id).map(r => ({
           id: r.id,
@@ -276,7 +229,6 @@ function startServicesListener() {
         }));
       });
     } catch (err) {
-      // Firestore 'in' queries fail if >10 items; fallback: fetch reviews without 'in'
       console.warn('in-query failed or too many services — falling back to fetch all reviews', err);
       const reviewsSnapAll = await db.collection('reviews').get();
       const allReviews = [];
@@ -302,13 +254,9 @@ function startServicesListener() {
    Search / Sort handlers
    =========================== */
 searchInput.oninput = () => {
-  // we re-render from current snapshot by simply triggering the listener result again:
-  // Easiest: call startServicesListener once and it will re-render on next onSnapshot; but we need re-render now.
-  // Simpler: re-read current DOM data -> rebuild by triggering a dummy fetch
   db.collection('services').orderBy('created', 'desc').get().then(snap => {
     const services = [];
     snap.forEach(doc => services.push({ id: doc.id, ...doc.data() }));
-    // attach empty reviews (we don't need ratings for quick search); UI will be updated on snapshot
     services.forEach(s => s._reviews = []);
     renderServicesFromArray(services);
   });
@@ -326,13 +274,11 @@ function openReviewsForService(serviceId, serviceTitle) {
   review_rating.value = '5';
   openModal(reviewsModal);
 
-  // Unsubscribe previous if any
   if (typeof unsubscribeReviewsSnapshot === 'function') {
     unsubscribeReviewsSnapshot();
     unsubscribeReviewsSnapshot = null;
   }
 
-  // Listen reviews for this service in real-time
   unsubscribeReviewsSnapshot = db.collection('reviews')
     .where('serviceId', '==', serviceId)
     .orderBy('date', 'desc')
@@ -349,7 +295,6 @@ function openReviewsForService(serviceId, serviceTitle) {
         });
       });
 
-      // render inside modal
       if (reviews.length === 0) {
         reviewsList.innerHTML = '<p>Δεν υπάρχουν ακόμα κριτικές για αυτή την υπηρεσία.</p>';
       } else {
@@ -444,7 +389,7 @@ function escapeHtml(str) {
 const unsubscribeServices = startServicesListener();
 
 /* ===========================
-   Clean-up on page unload (good practice)
+   Clean-up on page unload
    =========================== */
 window.addEventListener('beforeunload', () => {
   if (typeof unsubscribeReviewsSnapshot === 'function') unsubscribeReviewsSnapshot();
