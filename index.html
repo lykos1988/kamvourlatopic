@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="https://i.postimg.cc/nhtsNd4F/2701183.png" type="image/png">
+<title>Καμένα Βούρλα — Τοπική Αγορά Υπηρεσιών</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero" role="banner">
+  <div class="brand">Καμένα Βούρλα — Local Marketplace</div>
+  <h1>Υπηρεσίες & Κρατήσεις — Τοπική αγορά</h1>
+  <p class="lead">Βρες τοπικές υπηρεσίες, κράτα θέση και στήριξε τους επαγγελματίες των Καμένων Βούρλων — ιαματικά, παραλία, delivery και πολλά περισσότερα.</p>
+</header>
+
+<main class="container" role="main">
+  <div class="top-controls">
+    <div class="left-controls">
+      <input id="searchInput" class="search" placeholder="Αναζήτηση υπηρεσιών..." aria-label="Αναζήτηση">
+      <select id="sortSelect" class="search" aria-label="Ταξινόμηση">
+        <option value="default">Ταξινόμηση</option>
+        <option value="price-asc">Τιμή ↑</option>
+        <option value="price-desc">Τιμή ↓</option>
+        <option value="name-asc">Όνομα Α→Ω</option>
+        <option value="name-desc">Όνομα Ω→Α</option>
+        <option value="rating-desc">Καλύτερες κριτικές</option>
+      </select>
+    </div>
+
+    <div>
+      <button id="btn-add-service" class="btn">Προσθήκη Υπηρεσίας</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="services-title">
+      <h2 id="services-title">Διαθέσιμες Υπηρεσίες</h2>
+      <div id="servicesList" style="margin-top:12px"></div>
+    </section>
+
+    <aside class="right-panel">
+      <div class="card section">
+        <h3>Σχετικά</h3>
+        <p style="margin:0; color:var(--muted)">Η ψηφιακή πλατφόρμα που φέρνει κοντά κατοίκους και επαγγελματίες της περιοχής. Βρείτε εύκολα τοπικές υπηρεσίες και υποστηρίξτε την κοινότητα των Καμένων Βούρλων.</p>
+      </div>
+      
+      <div class="card section">
+        <h3>Βοήθεια</h3>
+        <button id="openHelp" class="small owner">Οδηγίες Χρήσης</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- Service modal -->
+<div id="serviceModal" class="overlay" aria-hidden="true">
+  <div class="modal">
+    <h2 id="serviceModalTitle">Προσθήκη Υπηρεσίας</h2>
+    <div class="field"><label>Τίτλος *</label><input id="s_title" placeholder="π.χ. Καθαρισμός Σπιτιού" required></div>
+    <div class="field"><label>Ονοματεπώνυμο *</label><input id="s_name" placeholder="Πλήρες όνομα" required></div>
+    <div class="field"><label>Τηλέφωνο *</label><input id="s_phone" type="tel" placeholder="π.χ. 2101234567" required></div>
+    <div class="field"><label>Email *</label><input id="s_email" type="email" placeholder="you@example.com" required></div>
+    <div class="field"><label>Ιστότοπος</label><input id="s_website" type="url" placeholder="https://example.com"></div>
+    <div class="field"><label>Περιγραφή</label><textarea id="s_desc"></textarea></div>
+    <div class="form-row" style="margin-bottom:12px">
+      <div class="field"><label>Τιμή (€) *</label><input id="s_price" type="number" min="0" step="0.01" required></div>
+      <div class="field"><label>Φωτογραφία (URL)</label><input id="s_img" placeholder="προαιρετικό URL εικόνας"></div>
+    </div>
+    <div style="text-align:right">
+      <button id="saveServiceBtn" class="btn">Αποθήκευση</button>
+      <button id="serviceClose" class="btn ghost">Άκυρο</button>
+      <button id="deleteServiceBtn" class="btn danger" style="display:none; float:left">Διαγραφή</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reviews modal -->
+<div id="reviewsModal" class="overlay" aria-hidden="true">
+  <div class="modal" style="max-width:680px">
+    <h2>Κριτικές</h2>
+    <h3 id="reviewsServiceTitle" style="margin-top:0"></h3>
+    <div id="reviewsList" style="max-height:360px; overflow:auto; margin-top:8px"></div>
+    
+    <div style="margin-top:20px; border-top:1px solid #eee; padding-top:20px">
+      <h3>Αφήστε τη δική σας κριτική</h3>
+      <div class="field"><label>Όνομα</label><input id="review_name" placeholder="Το όνομά σας"></div>
+      <div class="field"><label>Κριτική</label><textarea id="review_text" placeholder="Γράψτε την εμπειρία σας..."></textarea></div>
+      <div class="field"><label>Βαθμολογία (1-5)</label>
+        <select id="review_rating">
+          <option value="5">★★★★★</option>
+          <option value="4">★★★★☆</option>
+          <option value="3">★★★☆☆</option>
+          <option value="2">★★☆☆☆</option>
+          <option value="1">★☆☆☆☆</option>
+        </select>
+      </div>
+      <div style="text-align:right; margin-top:12px">
+        <button id="submitReview" class="btn">Υποβολή</button>
+        <button id="closeReviews" class="btn ghost">Κλείσιμο</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Help modal -->
+<div id="helpModal" class="overlay" aria-hidden="true">
+  <div class="modal" style="max-width:600px">
+    <h2>Πώς λειτουργεί η πλατφόρμα</h2>
+    <ol style="padding-left:20px; line-height:1.6">
+      <li><strong>Προσθήκη Υπηρεσίας:</strong> Συμπλήρωσε τίτλο, όνομα, τηλέφωνο, email, τιμή και προαιρετικά περιγραφή, ιστότοπο και φωτογραφία.</li>
+      <li><strong>Αναζήτηση:</strong> Χρησιμοποίησε την μπάρα αναζήτησης για να βρεις υπηρεσίες.</li>
+      <li><strong>Κριτικές:</strong> Μπορείς να αφήσεις κριτική για κάθε υπηρεσία.</li>
+      <li><strong>Επεξεργασία:</strong> Ο δημιουργός μπορεί να επεξεργαστεί ή να διαγράψει την υπηρεσία του.</li>
+    </ol>
+    <div style="text-align:right; margin-top:12px">
+      <button id="closeHelp" class="btn">Κλείσιμο</button>
+    </div>
+  </div>
+</div>
+
+<footer>© 2025 Καμένα Βούρλα — Τοπική Αγορά</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
