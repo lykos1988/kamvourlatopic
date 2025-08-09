@@ -201,7 +201,6 @@ function renderServicesFromArray(services) {
       </div>
       <div class="actions">
         <button class="small book" data-id="${s.id}">Κριτικές</button>
-        <button class="small edit" data-id="${s.id}">Επεξεργασία</button>
         <button class="small share" data-title="${encodeURIComponent(s.title||'')}" data-desc="${encodeURIComponent(s.desc||'')}">Κοινή χρήση</button>
       </div>
     `;
