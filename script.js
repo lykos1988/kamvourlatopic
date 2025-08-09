@@ -1,17 +1,23 @@
 /* ===========================
-   Αρχικά δεδομένα
+   Firebase αρχικοποίηση
+   (Βεβαιώσου ότι στο index.html έχεις τα sdk <script> πριν από αυτό το αρχείο)
    =========================== */
-function read(key){ try{return JSON.parse(localStorage.getItem(key)||'null')}catch(e){return null} }
-function write(key,val){ localStorage.setItem(key, JSON.stringify(val)) }
+const firebaseConfig = {
+  apiKey: "AIzaSyAOTN20OrDBMIeXqgOeiEWwk__ylT9wOcQ",
+  authDomain: "kamvourlatopic.firebaseapp.com",
+  projectId: "kamvourlatopic",
+  storageBucket: "kamvourlatopic.firebasestorage.app",
+  messagingSenderId: "959451336361",
+  appId: "1:959451336361:web:27b94d1799d4bb3159a3b8",
+  measurementId: "G-0T7K4QLYH6"
+};
 
-if(!read('kv_services')) {
-  write('kv_services', []);
-}
-if(!read('kv_reviews')) {
-  write('kv_reviews', []);
-}
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-/* cached DOM */
+/* ===========================
+   Cached DOM elements
+   =========================== */
 const servicesList = document.getElementById('servicesList');
 const searchInput = document.getElementById('searchInput');
 const sortSelect = document.getElementById('sortSelect');
@@ -45,18 +51,25 @@ const closeHelp = document.getElementById('closeHelp');
 
 let currentServiceId = null;
 let currentServiceForReview = null;
+let unsubscribeReviewsSnapshot = null; // για live updates των κριτικών όταν ανοίγει modal
 
-/* open/close helpers */
-function openModal(el) { 
-  el.style.display = 'flex'; 
-  el.setAttribute('aria-hidden','false');
+/* ===========================
+   Modal helpers
+   =========================== */
+function openModal(el) {
+  if (!el) return;
+  el.style.display = 'flex';
+  el.setAttribute('aria-hidden', 'false');
 }
-function closeModal(el) { 
-  el.style.display = 'none'; 
-  el.setAttribute('aria-hidden','true');
+function closeModal(el) {
+  if (!el) return;
+  el.style.display = 'none';
+  el.setAttribute('aria-hidden', 'true');
 }
 
-/* Event listeners */
+/* ===========================
+   Add / Edit Service UI
+   =========================== */
 btnAddService.addEventListener('click', () => {
   currentServiceId = null;
   document.getElementById('serviceModalTitle').textContent = 'Προσθήκη Υπηρεσίας';
@@ -74,7 +87,10 @@ btnAddService.addEventListener('click', () => {
 
 serviceClose.onclick = () => closeModal(serviceModal);
 
-saveServiceBtn.onclick = () => {
+/* ===========================
+   Save Service -> Firestore
+   =========================== */
+saveServiceBtn.onclick = async () => {
   const title = s_title.value.trim();
   const name = s_name.value.trim();
   const phone = s_phone.value.trim();
@@ -83,233 +99,355 @@ saveServiceBtn.onclick = () => {
   const desc = s_desc.value.trim();
   const price = parseFloat(s_price.value);
   const img = s_img.value.trim() || null;
-  
-  if(!title || !name || !phone || !email || isNaN(price)) {
+
+  if (!title || !name || !phone || !email || isNaN(price)) {
     alert('Συμπλήρωσε τα υποχρεωτικά πεδία (*)');
     return;
   }
 
-  let services = read('kv_services') || [];
-  
-  if(currentServiceId) {
-    // Επεξεργασία υπάρχουσας υπηρεσίας
-    const index = services.findIndex(s => s.id === currentServiceId);
-    if(index !== -1) {
-      services[index] = {
-        ...services[index],
+  try {
+    if (currentServiceId) {
+      // update
+      await db.collection('services').doc(currentServiceId).update({
         title, name, phone, email, website, desc, price, img
-      };
+      });
+    } else {
+      // add new
+      await db.collection('services').add({
+        title, name, phone, email, website, desc, price, img,
+        created: firebase.firestore.FieldValue.serverTimestamp()
+      });
     }
-  } else {
-    // Προσθήκη νέας υπηρεσίας
-    const id = services.length ? services[services.length-1].id + 1 : 1;
-    services.push({ id, title, name, phone, email, website, desc, price, img });
+    closeModal(serviceModal);
+    alert('Η υπηρεσία αποθηκεύτηκε');
+  } catch (err) {
+    console.error('Σφάλμα αποθήκευσης:', err);
+    alert('Παρουσιάστηκε σφάλμα κατά την αποθήκευση.');
   }
-  
-  write('kv_services', services);
-  closeModal(serviceModal);
-  renderServices();
-  alert('Η υπηρεσία αποθηκεύτηκε');
 };
 
-deleteServiceBtn.onclick = () => {
-  if(!currentServiceId || !confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτή την υπηρεσία;')) {
-    return;
+/* ===========================
+   Delete Service (και διαγραφή κριτικών του)
+   =========================== */
+deleteServiceBtn.onclick = async () => {
+  if (!currentServiceId) return;
+  if (!confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτή την υπηρεσία;')) return;
+
+  try {
+    // 1) Διαγραφή όλων των κριτικών που έχουν serviceId == currentServiceId
+    const reviewsSnap = await db.collection('reviews').where('serviceId', '==', currentServiceId).get();
+    const batch = db.batch();
+    reviewsSnap.forEach(doc => batch.delete(doc.ref));
+    // 2) Διαγραφή υπηρεσίας
+    const serviceRef = db.collection('services').doc(currentServiceId);
+    batch.delete(serviceRef);
+
+    await batch.commit();
+    closeModal(serviceModal);
+    alert('Η υπηρεσία και οι κριτικές της διαγράφηκαν');
+  } catch (err) {
+    console.error('Σφάλμα διαγραφής:', err);
+    alert('Παρουσιάστηκε σφάλμα κατά τη διαγραφή.');
   }
-  
-  let services = read('kv_services') || [];
-  services = services.filter(s => s.id !== currentServiceId);
-  write('kv_services', services);
-  
-  // Διαγραφή και των κριτικών για αυτή την υπηρεσία
-  let reviews = read('kv_reviews') || [];
-  reviews = reviews.filter(r => r.serviceId !== currentServiceId);
-  write('kv_reviews', reviews);
-  
-  closeModal(serviceModal);
-  renderServices();
-  alert('Η υπηρεσία διαγράφηκε');
 };
 
-function openReviewsModal(serviceId, serviceTitle) {
-  currentServiceForReview = serviceId;
-  reviewsServiceTitle.textContent = serviceTitle;
-  renderReviews(serviceId);
-  openModal(reviewsModal);
-}
-
-function renderReviews(serviceId) {
-  const reviews = (read('kv_reviews') || []).filter(r => r.serviceId === serviceId);
-  
-  if(reviews.length === 0) {
-    reviewsList.innerHTML = '<p>Δεν υπάρχουν ακόμα κριτικές για αυτή την υπηρεσία.</p>';
-    return;
-  }
-  
-  reviewsList.innerHTML = reviews.map(r => `
-    <div class="review" style="margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid #eee">
-      <div style="display:flex; justify-content:space-between; margin-bottom:8px">
-        <strong>${r.name || 'Ανώνυμος'}</strong>
-        <div>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
-      </div>
-      <div>${r.text}</div>
-      <div style="font-size:0.8em; color:#666; margin-top:8px">${new Date(r.date).toLocaleDateString('el-GR')}</div>
-    </div>
-  `).join('');
-}
-
-submitReview.onclick = () => {
-  const name = review_name.value.trim();
-  const text = review_text.value.trim();
-  const rating = parseInt(review_rating.value);
-  
-  if(!text || isNaN(rating)) {
-    alert('Συμπλήρωσε την κριτική και την βαθμολογία');
-    return;
-  }
-  
-  let reviews = read('kv_reviews') || [];
-  reviews.push({
-    serviceId: currentServiceForReview,
-    name: name || 'Ανώνυμος',
-    text,
-    rating,
-    date: new Date().toISOString()
-  });
-  
-  write('kv_reviews', reviews);
-  review_name.value = '';
-  review_text.value = '';
-  renderReviews(currentServiceForReview);
-  renderServices(); // Για να ενημερωθεί η μέση βαθμολογία
-  alert('Η κριτική σας υποβλήθηκε');
-};
-
-closeReviews.onclick = () => closeModal(reviewsModal);
-
-openHelp.onclick = () => openModal(helpModal);
-closeHelp.onclick = () => closeModal(helpModal);
-
-/* Render services list */
-function renderServices() {
-  let services = read('kv_services') || [];
+/* ===========================
+   Render Services (real-time)
+   =========================== */
+function renderServicesFromArray(services) {
+  // Apply search filter
   const q = (searchInput.value || '').toLowerCase();
-  
-  if(q) {
-    services = services.filter(s => 
-      s.title.toLowerCase().includes(q) || 
-      s.desc.toLowerCase().includes(q) || 
-      s.name.toLowerCase().includes(q)
+  let filtered = services;
+  if (q) {
+    filtered = services.filter(s =>
+      (s.title || '').toLowerCase().includes(q) ||
+      (s.desc || '').toLowerCase().includes(q) ||
+      (s.name || '').toLowerCase().includes(q)
     );
   }
-  
+
+  // Sort
   const sort = sortSelect.value;
-  if(sort === 'price-asc') services.sort((a,b) => a.price - b.price);
-  else if(sort === 'price-desc') services.sort((a,b) => b.price - a.price);
-  else if(sort === 'name-asc') services.sort((a,b) => a.title.localeCompare(b.title));
-  else if(sort === 'name-desc') services.sort((a,b) => b.title.localeCompare(a.title));
-  else if(sort === 'rating-desc') {
-    services.forEach(s => {
-      const reviews = (read('kv_reviews') || []).filter(r => r.serviceId === s.id);
-      s.averageRating = reviews.length ? 
-        reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 
-        0;
-    });
-    services.sort((a,b) => b.averageRating - a.averageRating);
-  }
+  if (sort === 'price-asc') filtered.sort((a,b) => (a.price||0) - (b.price||0));
+  else if (sort === 'price-desc') filtered.sort((a,b) => (b.price||0) - (a.price||0));
+  else if (sort === 'name-asc') filtered.sort((a,b) => (a.title||'').localeCompare(b.title||''));
+  else if (sort === 'name-desc') filtered.sort((a,b) => (b.title||'').localeCompare(a.title||''));
 
   servicesList.innerHTML = '';
-  
-  services.forEach(s => {
-    const reviews = (read('kv_reviews') || []).filter(r => r.serviceId === s.id);
-    const averageRating = reviews.length 
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) 
-    : 0;
 
-    const reviewsCount = reviews.length;
-    
+  filtered.forEach(s => {
+    const reviewsForS = s._reviews || []; // may be injected when computing ratings
+    const reviewsCount = reviewsForS.length;
+    const avgRating = reviewsCount ? (reviewsForS.reduce((sum,r)=>sum+(r.rating||0),0)/reviewsCount) : 0;
+
+    const priceText = (typeof s.price === 'number') ? `€${s.price.toFixed(2)}` : '-';
+
     const div = document.createElement('div');
     div.className = 'service';
     div.innerHTML = `
       <div class="thumb">${s.img ? `<img src="${s.img}" alt="${s.title}">` : ''}</div>
       <div class="meta">
-        <h3>${s.title}</h3>
+        <h3>${s.title || ''}</h3>
         <p>${s.desc || ''}</p>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px">
-          <div class="price">€${s.price.toFixed(2)}</div>
-          <div>
-            ${averageRating > 0 ? `${averageRating.toFixed(1)} ★ (${reviewsCount})` : 'Χωρίς κριτικές'}
+        <div style="display:flex; justify-content:space-between; margin-top:8px; align-items:center">
+          <div class="price">${priceText}</div>
+          <div style="font-size:0.95em">
+            ${reviewsCount ? `${avgRating.toFixed(1)} ★ (${reviewsCount})` : 'Χωρίς κριτικές'}
           </div>
         </div>
-        <div style="font-size:0.9em; color:var(--muted); margin-top:4px">
-          ${s.name} | ${s.phone} | ${s.email}
+        <div style="font-size:0.9em; color:var(--muted); margin-top:6px">
+          ${s.name || ''} | ${s.phone || ''} | ${s.email || ''}
         </div>
       </div>
       <div class="actions">
-        <button class="small book" data-service-id="${s.id}">Κριτικές</button>
-        <button class="small edit" data-service-id="${s.id}">Επεξεργασία</button>
-        <button class="small share" data-service-title="${encodeURIComponent(s.title)}" 
-                data-service-desc="${encodeURIComponent(s.desc || '')}">
-          Κοινή χρήση
-        </button>
+        <button class="small book" data-id="${s.id}">Κριτικές</button>
+        <button class="small edit" data-id="${s.id}">Επεξεργασία</button>
+        <button class="small share" data-title="${encodeURIComponent(s.title||'')}" data-desc="${encodeURIComponent(s.desc||'')}">Κοινή χρήση</button>
       </div>
     `;
-    
+
+    // Κριτικές - άνοιγμα modal
     div.querySelector('.book').onclick = () => {
-      openReviewsModal(s.id, s.title);
+      openReviewsForService(s.id, s.title || '');
     };
-    
+
+    // Επεξεργασία
     div.querySelector('.edit').onclick = () => {
       currentServiceId = s.id;
       document.getElementById('serviceModalTitle').textContent = 'Επεξεργασία Υπηρεσίας';
       deleteServiceBtn.style.display = 'inline-block';
-      s_title.value = s.title;
-      s_name.value = s.name;
-      s_phone.value = s.phone;
-      s_email.value = s.email;
+      s_title.value = s.title || '';
+      s_name.value = s.name || '';
+      s_phone.value = s.phone || '';
+      s_email.value = s.email || '';
       s_website.value = s.website || '';
       s_desc.value = s.desc || '';
-      s_price.value = s.price;
+      s_price.value = (typeof s.price === 'number') ? s.price : '';
       s_img.value = s.img || '';
       openModal(serviceModal);
     };
-    
+
+    // Share / copy
     div.querySelector('.share').onclick = (e) => {
-      const title = decodeURIComponent(e.target.getAttribute('data-service-title'));
-      const desc = decodeURIComponent(e.target.getAttribute('data-service-desc'));
-      const shareText = `${title} - ${desc}`.substring(0, 100) + '...';
-      
-      if(navigator.share) {
-        navigator.share({
-          title: title,
-          text: desc,
-          url: window.location.href
-        }).catch(err => {
-          console.log('Error sharing:', err);
-          copyToClipboard(shareText);
-        });
+      const title = decodeURIComponent(e.target.getAttribute('data-title') || '');
+      const desc = decodeURIComponent(e.target.getAttribute('data-desc') || '');
+      const shareText = `${title} - ${desc}`.substring(0, 200);
+      if (navigator.share) {
+        navigator.share({ title, text: desc, url: window.location.href }).catch(() => copyToClipboard(shareText));
       } else {
         copyToClipboard(shareText);
       }
     };
-    
+
     servicesList.appendChild(div);
   });
 }
 
-function copyToClipboard(text) {
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand('copy');
-  document.body.removeChild(textarea);
-  alert('Ο σύνδεσμος αντιγράφηκε στο clipboard:\n\n' + text);
+/* ===========================
+   Load services + attach review counts (live)
+   =========================== */
+function startServicesListener() {
+  // We'll listen services and also fetch all reviews (or listen them) to compute average rating locally.
+  // Simpler approach: listen services, and for each snapshot load reviews for those services.
+  return db.collection('services').orderBy('created', 'desc').onSnapshot(async serviceSnap => {
+    const services = [];
+    serviceSnap.forEach(doc => services.push({ id: doc.id, ...doc.data() }));
+
+    // Collect service ids
+    const serviceIds = services.map(s => s.id);
+    if (serviceIds.length === 0) {
+      renderServicesFromArray([]);
+      return;
+    }
+
+    // Query reviews for these services
+    try {
+      const reviewsSnap = await db.collection('reviews').where('serviceId', 'in', serviceIds).get();
+      const reviews = [];
+      reviewsSnap.forEach(rdoc => reviews.push({ id: rdoc.id, ...rdoc.data() }));
+
+      // attach reviews to services
+      services.forEach(s => {
+        s._reviews = reviews.filter(r => r.serviceId === s.id).map(r => ({
+          id: r.id,
+          name: r.name || 'Ανώνυμος',
+          text: r.text || '',
+          rating: r.rating || 0,
+          date: r.date ? r.date.toDate ? r.date.toDate() : new Date(r.date) : null
+        }));
+      });
+    } catch (err) {
+      // Firestore 'in' queries fail if >10 items; fallback: fetch reviews without 'in'
+      console.warn('in-query failed or too many services — falling back to fetch all reviews', err);
+      const reviewsSnapAll = await db.collection('reviews').get();
+      const allReviews = [];
+      reviewsSnapAll.forEach(rdoc => allReviews.push({ id: rdoc.id, ...rdoc.data() }));
+      services.forEach(s => {
+        s._reviews = allReviews.filter(r => r.serviceId === s.id).map(r => ({
+          id: r.id,
+          name: r.name || 'Ανώνυμος',
+          text: r.text || '',
+          rating: r.rating || 0,
+          date: r.date ? r.date.toDate ? r.date.toDate() : new Date(r.date) : null
+        }));
+      });
+    }
+
+    renderServicesFromArray(services);
+  }, err => {
+    console.error('Σφάλμα listener services:', err);
+  });
 }
 
-/* Event listeners */
-searchInput.oninput = renderServices;
-sortSelect.onchange = renderServices;
+/* ===========================
+   Search / Sort handlers
+   =========================== */
+searchInput.oninput = () => {
+  // we re-render from current snapshot by simply triggering the listener result again:
+  // Easiest: call startServicesListener once and it will re-render on next onSnapshot; but we need re-render now.
+  // Simpler: re-read current DOM data -> rebuild by triggering a dummy fetch
+  db.collection('services').orderBy('created', 'desc').get().then(snap => {
+    const services = [];
+    snap.forEach(doc => services.push({ id: doc.id, ...doc.data() }));
+    // attach empty reviews (we don't need ratings for quick search); UI will be updated on snapshot
+    services.forEach(s => s._reviews = []);
+    renderServicesFromArray(services);
+  });
+};
+sortSelect.onchange = searchInput.oninput;
 
-/* Init */
-renderServices();
+/* ===========================
+   Reviews: open modal and live-listen reviews for a service
+   =========================== */
+function openReviewsForService(serviceId, serviceTitle) {
+  currentServiceForReview = serviceId;
+  reviewsServiceTitle.textContent = serviceTitle || 'Κριτικές';
+  review_name.value = '';
+  review_text.value = '';
+  review_rating.value = '5';
+  openModal(reviewsModal);
+
+  // Unsubscribe previous if any
+  if (typeof unsubscribeReviewsSnapshot === 'function') {
+    unsubscribeReviewsSnapshot();
+    unsubscribeReviewsSnapshot = null;
+  }
+
+  // Listen reviews for this service in real-time
+  unsubscribeReviewsSnapshot = db.collection('reviews')
+    .where('serviceId', '==', serviceId)
+    .orderBy('date', 'desc')
+    .onSnapshot(snapshot => {
+      const reviews = [];
+      snapshot.forEach(doc => {
+        const r = doc.data();
+        reviews.push({
+          id: doc.id,
+          name: r.name || 'Ανώνυμος',
+          text: r.text || '',
+          rating: r.rating || 0,
+          date: r.date ? (r.date.toDate ? r.date.toDate() : new Date(r.date)) : null
+        });
+      });
+
+      // render inside modal
+      if (reviews.length === 0) {
+        reviewsList.innerHTML = '<p>Δεν υπάρχουν ακόμα κριτικές για αυτή την υπηρεσία.</p>';
+      } else {
+        reviewsList.innerHTML = reviews.map(r => `
+          <div class="review" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #eee">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+              <strong>${escapeHtml(r.name)}</strong>
+              <div>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+            </div>
+            <div style="white-space:pre-wrap">${escapeHtml(r.text)}</div>
+            <div style="font-size:0.8em; color:#666; margin-top:8px">
+              ${r.date ? new Date(r.date).toLocaleString('el-GR') : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+    }, err => {
+      console.error('Σφάλμα listener κριτικών:', err);
+      reviewsList.innerHTML = '<p>Σφάλμα στην ανάκτηση κριτικών.</p>';
+    });
+}
+
+closeReviews.onclick = () => {
+  closeModal(reviewsModal);
+  if (typeof unsubscribeReviewsSnapshot === 'function') {
+    unsubscribeReviewsSnapshot();
+    unsubscribeReviewsSnapshot = null;
+  }
+};
+
+/* ===========================
+   Submit review
+   =========================== */
+submitReview.onclick = async () => {
+  const name = review_name.value.trim() || 'Ανώνυμος';
+  const text = review_text.value.trim();
+  const rating = parseInt(review_rating.value);
+
+  if (!text || isNaN(rating) || !currentServiceForReview) {
+    alert('Συμπλήρωσε την κριτική και την βαθμολογία');
+    return;
+  }
+
+  try {
+    await db.collection('reviews').add({
+      serviceId: currentServiceForReview,
+      name,
+      text,
+      rating,
+      date: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    review_name.value = '';
+    review_text.value = '';
+    review_rating.value = '5';
+    alert('Η κριτική σας υποβλήθηκε');
+  } catch (err) {
+    console.error('Σφάλμα υποβολής κριτικής:', err);
+    alert('Παρουσιάστηκε σφάλμα κατά την υποβολή της κριτικής.');
+  }
+};
+
+/* ===========================
+   Utility: copy to clipboard
+   =========================== */
+function copyToClipboard(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    alert('Κείμενο αντιγράφηκε στο πρόχειρο:\n\n' + text);
+  } catch (e) {
+    alert('Δεν ήταν δυνατή η αντιγραφή. Κάνε χειροκίνητη αντιγραφή:\n\n' + text);
+  }
+  document.body.removeChild(ta);
+}
+
+/* ===========================
+   Utility: HTML escape
+   =========================== */
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>"']/g, function(m) {
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]);
+  });
+}
+
+/* ===========================
+   Start listeners
+   =========================== */
+const unsubscribeServices = startServicesListener();
+
+/* ===========================
+   Clean-up on page unload (good practice)
+   =========================== */
+window.addEventListener('beforeunload', () => {
+  if (typeof unsubscribeReviewsSnapshot === 'function') unsubscribeReviewsSnapshot();
+  if (typeof unsubscribeServices === 'function') unsubscribeServices();
+});
