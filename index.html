@@ -24,6 +24,7 @@
         <li><a href="#" onclick="filterAds('Ακίνητα')">Ακίνητα</a></li>
         <li><a href="#" onclick="filterAds('Αυτοκίνητα')">Αυτοκίνητα</a></li>
         <li><a href="#" onclick="filterAds('Επαγγελματικά')">Επαγγελματικά</a></li>
+        <li><a href="#" onclick="filterAds('Εργασία')">Εργασία</a></li>
         <li><a href="#" onclick="filterAds('Άλλο')">Άλλο</a></li>
       </ul>
     </nav>
@@ -47,6 +48,7 @@
           <option value="Ακίνητα">Ακίνητα</option>
           <option value="Αυτοκίνητα">Αυτοκίνητα</option>
           <option value="Επαγγελματικά">Επαγγελματικά</option>
+          <option value="Εργασία">Εργασία</option>
           <option value="Άλλο">Άλλο</option>
         </select>
 
@@ -66,7 +68,7 @@
         <input type="number" id="price" required>
 
         <label for="image">Φωτογραφία:</label>
-        <input type="file" id="image" accept="image/*">
+        <input type="file" id="image" accept="image/*" capture="environment">
 
         <button type="submit">Καταχώρηση</button>
       </form>
@@ -118,4 +120,4 @@
 
   <script src="script.js"></script>
 </body>
-</html>
+        </html>
