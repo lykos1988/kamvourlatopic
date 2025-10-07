@@ -207,7 +207,7 @@ function openFooterModal(type) {
     content.innerHTML = `
       <h2>Επικοινωνία</h2>
       <p>Αν έχετε ερωτήσεις ή χρειάζεστε υποστήριξη, μπορείτε να επικοινωνήσετε μαζί μας:</p>
-      <p>Email: info@example.com<br>Τηλέφωνο: 2101234567</p>
+      <p>Email: sotiris.dimitriou.1988@gmail.com<br>Τηλέφωνο: 6989317685</p>
     `;
   }
 
