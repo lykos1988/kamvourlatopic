@@ -204,21 +204,7 @@ footer {
   display: block;
   margin-bottom: 10px;
 }
-/* Πορτοκαλί Ενημερωτική Μπάρα */
-.top-banner {
-  background: linear-gradient(90deg, #ff7b00, #ff9900);
-  color: white;
-  text-align: center;
-  padding: 10px 0;
-  font-weight: bold;
-  font-size: 1rem;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
+
 
 .top-banner:hover {
   background: linear-gradient(90deg, #ff9900, #ffaa33);
@@ -239,7 +225,22 @@ footer p a:hover {
   position: fixed;
   z-index: 1000;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba/* Πορτοκαλί Ενημερωτική Μπάρα */
+.top-banner {
+  background: linear-gradient(90deg, #6efa91, #ff9900);
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+  font-weight: bold;
+  font-size: 1.2rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+(0,0,0,0.6);
   justify-content: center;
   align-items: center;
 }
