@@ -94,18 +94,20 @@ function saveAd(adObj) {
     .catch(err => console.error("Σφάλμα αποθήκευσης:", err));
 }
 
-// Εμφάνιση αγγελίας στη σελίδα
+// Εμφάνιση αγγελίας στη σελίδα (διορθωμένη εκδοχή)
 function renderAd(ad, prepend = false) {
   const adContainer = document.getElementById("adsContainer");
   const adDiv = document.createElement("div");
   adDiv.classList.add("ad");
   adDiv.dataset.category = ad.category;
-  adDiv.dataset.id = ad.objectId;     // objectId για διαγραφή
-  adDiv.dataset.imageUrl = ad.imageUrl || ""; // κρατάμε και το imageUrl
+  adDiv.dataset.id = ad.objectId;     
+  adDiv.dataset.imageUrl = ad.imageUrl || ""; 
+
+  const verifiedHtml = ad.verified ? `<span class="verified-badge">Εγκεκριμένη</span>` : "";
 
   adDiv.innerHTML = `
     ${ad.imageUrl ? `<img src="${ad.imageUrl}" alt="${ad.title}">` : ""}
-    <h3>${ad.title}</h3>
+    <h3>${ad.title} ${verifiedHtml}</h3>
     <p>${ad.description}</p>
     <p><strong>Τοποθεσία:</strong> ${ad.location}</p>
     <p><strong>Τηλέφωνο:</strong> ${ad.phone}</p>
@@ -152,7 +154,6 @@ document.getElementById("commentForm").addEventListener("submit", function(e) {
 
           // Αν υπάρχει εικόνα -> σβήνουμε και από File Storage
           if (imageUrl) {
-            // Το URL είναι πχ: https://backendlessappcontent.com/APP-ID/UUID/files/ads-images/filename.jpg
             const filePath = imageUrl.split("/files/")[1]; 
             if (filePath) {
               Backendless.Files.remove(filePath)
@@ -235,6 +236,7 @@ document.addEventListener("DOMContentLoaded", function() {
     })
     .catch(err => console.error("Σφάλμα φόρτωσης αγγελιών:", err));
 });
+
 // --- Modal Επικοινωνίας ---
 function openContactModal() {
   const m = document.getElementById("contactModal");
@@ -280,29 +282,3 @@ window.addEventListener("click", (e) => {
   if (e.target.id === "contactModal") closeContactModal();
   if (e.target.id === "phonesModal") closePhonesModal();
 });
-
-// --- Verified badge στις αγγελίες ---
-function renderAd(ad, prepend = false) {
-  const adContainer = document.getElementById("adsContainer");
-  if (!adContainer) return;
-
-  const adDiv = document.createElement("div");
-  adDiv.classList.add("ad");
-  adDiv.dataset.category = ad.category;
-
-  const verifiedHtml = ad.verified ? `<span class="verified-badge">Εγκεκριμένη</span>` : "";
-
-  adDiv.innerHTML = `
-    ${ad.imageUrl ? `<img src="${ad.imageUrl}" alt="${ad.title}">` : ""}
-    <h3>${ad.title} ${verifiedHtml}</h3>
-    <p>${ad.description}</p>
-    <p><strong>Τοποθεσία:</strong> ${ad.location}</p>
-    <p><strong>Τηλέφωνο:</strong> ${ad.phone}</p>
-    <p><strong>Τιμή:</strong> ${ad.price} €</p>
-    <button class="comment-btn" onclick="openCommentModal(this)">Σχόλιο</button>
-    <div class="comments"></div>
-  `;
-
-  if (prepend) adContainer.prepend(adDiv);
-  else adContainer.appendChild(adDiv);
-}
