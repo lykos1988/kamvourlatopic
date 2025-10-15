@@ -616,3 +616,60 @@ function setupLocalLogin() {
     });
   }
 }
+/* =======================
+   Footer & Contact Modals
+   ======================= */
+window.openFooterModal = function(type) {
+  const modal = document.getElementById('footerModal');
+  const content = document.getElementById('footerContent');
+  if (!modal || !content) return;
+
+  let html = '';
+  if (type === 'privacy') {
+    html = `<h2>Πολιτική Απορρήτου</h2>
+            <p>Η ιστοσελίδα Kamena Vourla Topic σέβεται τα προσωπικά σας δεδομένα.
+            Δεν συλλέγουμε ή αποθηκεύουμε προσωπικές πληροφορίες πέραν όσων παρέχετε
+            εθελοντικά κατά την ανάρτηση αγγελιών.</p>`;
+  } else if (type === 'terms') {
+    html = `<h2>Όροι Χρήσης</h2>
+            <p>Με τη χρήση της πλατφόρμας συμφωνείτε να αναρτάτε αγγελίες με σεβασμό
+            και χωρίς προσβλητικό ή παράνομο περιεχόμενο.</p>`;
+  } else if (type === 'contact') {
+    html = `<h2>Επικοινωνία</h2>
+            <p>Για οποιοδήποτε θέμα επικοινωνήστε στο email:
+            <a href="mailto:info@kamenavourlatopic.gr">info@kamenavourlatopic.gr</a></p>`;
+  }
+
+  content.innerHTML = html;
+  modal.style.display = 'flex';
+};
+
+window.closeFooterModal = function() {
+  const modal = document.getElementById('footerModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.openContactModal = function() {
+  const modal = document.getElementById('contactModal');
+  if (modal) modal.style.display = 'flex';
+};
+window.closeContactModal = function() {
+  const modal = document.getElementById('contactModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.openPhonesModal = function() {
+  const modal = document.getElementById('phonesModal');
+  if (modal) modal.style.display = 'flex';
+};
+window.closePhonesModal = function() {
+  const modal = document.getElementById('phonesModal');
+  if (modal) modal.style.display = 'none';
+};
+
+/* Κλείσιμο modal όταν κάνεις κλικ εκτός περιεχομένου */
+window.addEventListener('click', function(e) {
+  document.querySelectorAll('.modal').forEach(m => {
+    if (e.target === m) m.style.display = 'none';
+  });
+});
