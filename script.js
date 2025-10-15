@@ -620,7 +620,6 @@ function setupLocalLogin() {
    Footer & Contact Modals
    ======================= */
 window.openFooterModal = function(type) {
-window.openFooterModal = function(type) {
   const modal = document.getElementById('footerModal');
   const content = document.getElementById('footerContent');
   if (!modal || !content) return;
