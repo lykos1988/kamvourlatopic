@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kamena Vourla Topic</title>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/mgspbzgG/Gemini-Generated-Image-1skla11skla11skl.png">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="glass-nav">
+    <div class="nav-container">
+      <div class="logo">
+        <img src="https://i.postimg.cc/Fz1ZVKtt/Gemini-Generated-Image-1skla11skla11skl.png" alt="Logo" class="main-logo">
+        <span>Kamena Vourla <small>Topic</small></span>
+      </div>
+      
+      <div class="nav-buttons">
+        <a href="https://www.facebook.com/groups/1619469575956075" target="_blank" class="fb-link" title="Ακολουθήστε μας στο Facebook">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </a>
+        <button class="btn-orange" onclick="openLegalModal('phones')">📞 Τηλέφωνα</button>
+        <button class="btn-primary" onclick="openModal('adModal')">+ Νέα Αγγελία</button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1>Η καρδιά των Καμένων Βούρλων</h1>
+      <p>Η πιο έμπιστη πλατφόρμα μικρών αγγελιών.</p>
+      <div class="search-box">
+        <input type="text" id="mainSearch" placeholder="Αναζήτηση αγγελίας..." onkeyup="filterAds()">
+      </div>
+    </div>
+    <div class="hero-wave">
+      <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V0C49.64,31.78,111.41,58.81,172,68.7c52.17,8.55,109.13,1.96,163.79-4.82Z" fill="#f8fafc"></path>
+      </svg>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="category-pills">
+      <button class="pill active" onclick="filterCategory('all')">Όλα</button>
+      <button class="pill" onclick="filterCategory('Ακίνητα')">🏠 Ακίνητα</button>
+      <button class="pill" onclick="filterCategory('Αυτοκίνητα')">🚗 Αυτοκίνητα</button>
+      <button class="pill" onclick="filterCategory('Εργασία')">💼 Εργασία</button>
+      <button class="pill" onclick="filterCategory('Άλλο')">✨ Διάφορα</button>
+    </div>
+    <div class="ads-grid" id="adsContainer"></div>
+  </main>
+
+  <footer class="main-footer">
+  <div class="footer-container">
+    <div class="footer-section about">
+      <img src="https://i.postimg.cc/Fz1ZVKtt/Gemini-Generated-Image-1skla11skla11skl.png" alt="Logo" class="footer-logo">
+      <p class="footer-description">
+        Το <strong>Kamena Vourla Topic</strong> αποτελεί τον κορυφαίο ψηφιακό προορισμό για την τοπική μας κοινότητα. Ένας σύγχρονος χώρος όπου η επικοινωνία, η προσφορά εργασίας και οι ευκαιρίες αγοραπωλησιών συναντιούνται με την αξιοπιστία και την ταχύτητα. Στόχος μας είναι να φέρουμε τους κατοίκους και τους επισκέπτες των Καμένων Βούρλων πιο κοντά, προσφέροντας μια εύχρηστη πλατφόρμα για κάθε ανάγκη της καθημερινότητας.
+      </p>
+    </div>
+
+    <div class="footer-section links">
+      <h4>Χρήσιμοι Σύνδεσμοι</h4>
+      <ul>
+        <li><a href="javascript:void(0)" onclick="openLegalModal('about')">Σχετικά με εμάς</a></li>
+        <li><a href="javascript:void(0)" onclick="openLegalModal('privacy')">Πολιτική Απορρήτου</a></li>
+        <li><a href="javascript:void(0)" onclick="openLegalModal('terms')">Όροι Χρήσης</a></li>
+        <li><a href="javascript:void(0)" onclick="openLegalModal('cookies')">Cookies</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section support">
+      <h4>Υποστήριξη</h4>
+      <ul>
+        <li><a href="javascript:void(0)" onclick="openLegalModal('contact')">Επικοινωνία</a></li>
+        <li><a href="javascript:void(0)" onclick="openLegalModal('phones')">Τηλέφωνα Ανάγκης</a></li>
+        <li><a href="javascript:void(0)" onclick="openLegalModal('faq')">Συχνές Ερωτήσεις</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section social">
+      <h4>Ακολουθήστε μας</h4>
+      <a href="https://www.facebook.com/groups/1619469575956075" target="_blank" class="social-icon">Facebook Group</a>
+      <p style="margin-top: 15px; font-size: 0.8rem; opacity: 0.7;">&copy; 2025 Kamena Vourla Topic. <br>All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+  <div id="adModal" class="modal-overlay">
+    <div class="modal-card ad-modal-special">
+      <div class="modal-header">
+        <h2>✨ Νέα Αγγελία</h2>
+        <span class="close-btn" onclick="closeModal('adModal')">&times;</span>
+      </div>
+      <form id="adForm">
+        <div class="field">
+          <label>📸 Φωτογραφία Αγγελίας</label>
+          <div class="image-upload-wrapper">
+            <input type="file" id="adImage" accept="image/*" onchange="previewImage(event)">
+            <div id="imagePreview" class="image-preview-container">
+              <span>Προσθήκη Φωτογραφίας</span>
+            </div>
+          </div>
+        </div>
+        <div class="input-grid">
+          <div class="field">
+            <label>📁 Κατηγορία</label>
+            <select id="category" required>
+              <option value="Ακίνητα">🏠 Ακίνητα</option>
+              <option value="Αυτοκίνητα">🚗 Αυτοκίνητα</option>
+              <option value="Εργασία">💼 Εργασία</option>
+              <option value="Άλλο">✨ Διάφορα</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>📝 Τίτλος</label>
+            <input type="text" id="title" required>
+          </div>
+        </div>
+        <div class="field">
+          <label>ℹ️ Περιγραφή</label>
+          <textarea id="description" rows="3" required></textarea>
+        </div>
+        <div class="input-grid">
+          <div class="field"><label>💰 Τιμή (€)</label><input type="number" id="price" required></div>
+          <div class="field"><label>📞 Τηλέφωνο</label><input type="tel" id="phone" required></div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeModal('adModal')">Ακύρωση</button>
+            <button type="submit" class="btn-submit">🚀 Δημοσίευση</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="legalModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="legalTitle"></h2>
+        <span class="close-btn" onclick="closeModal('legalModal')">&times;</span>
+      </div>
+      <div class="modal-body" id="legalContent"></div>
+      <div class="modal-footer">
+        <button class="btn-close-modal" onclick="closeModal('legalModal')">Κλείσιμο</button>
+      </div>
+    </div>
+  </div>
+
+<div id="viewAdModal" class="modal-overlay">
+  <div class="modal-card ad-view-card">
+    <div class="modal-header">
+      <h2 id="viewAdTitle"></h2>
+      <span class="close-btn" onclick="closeModal('viewAdModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <img id="viewAdImage" src="" class="full-ad-image">
+      <div class="ad-info-section">
+        <span id="viewAdCategory" class="category-tag"></span>
+        <p id="viewAdDescription" class="full-description" style="margin: 20px 0; line-height: 1.6;"></p>
+        <div class="ad-meta" style="display:flex; justify-content:space-between; align-items:center;">
+          <span id="viewAdPrice" class="price"></span>
+          <span id="viewAdPhone" class="phone"></span>
+        </div>
+      </div>
+      <hr style="margin: 25px 0; opacity: 0.2;">
+      <div class="comments-section">
+        <h3>💬 Σχόλια</h3>
+        <div id="commentsList" class="comments-list"></div>
+        <div class="comment-input-area" style="display:flex; flex-direction:column; gap:10px;">
+          <input type="text" id="commentName" placeholder="Το όνομά σας" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
+          <textarea id="commentText" placeholder="Γράψτε ένα σχόλιο..." style="padding:10px; border-radius:8px; border:1px solid #ddd;"></textarea>
+          <button onclick="addComment()" class="btn-primary">Δημοσίευση Σχολίου</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="adminModal" class="modal-overlay">
+  <div class="modal-card" style="max-width: 800px; width: 95%;">
+    <div class="modal-header">
+      <h2>🛠️ Διαχείριση Συστήματος (Admin)</h2>
+      <span class="close-btn" onclick="closeModal('adminModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="admin-section" style="background:#f8fafc; padding:20px; border-radius:15px; margin-bottom:20px;">
+        <h3>📞 Διαχείριση Τηλεφώνων</h3>
+        <div class="input-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
+            <div class="field"><label>Δήμος</label><input type="text" id="p_mun"></div>
+            <div class="field"><label>Αστυνομία</label><input type="text" id="p_pol"></div>
+            <div class="field"><label>Υγεία</label><input type="text" id="p_hea"></div>
+        </div>
+        <button onclick="savePhones()" class="btn-primary" style="margin-top:15px; width:100%;">Ενημέρωση Τηλεφώνων</button>
+      </div>
+
+      <div class="admin-section">
+        <h3>📝 Διαχείριση Αγγελιών</h3>
+        <div id="adminAdsList" style="margin-top:15px; max-height:400px; overflow-y:auto; border:1px solid #eee; border-radius:10px;">
+            </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script src="script.js"></script>
+</body>
+</html>

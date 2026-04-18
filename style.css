@@ -1,0 +1,187 @@
+:root {
+  --primary: #2563eb;
+  --orange: #f59e0b;
+  --dark: #0f172a;
+  --bg-light: #f8fafc;
+  --white: #ffffff;
+  --text-muted: #64748b;
+  --radius-lg: 20px;
+  --transition: all 0.3s ease;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-light); color: var(--dark); overflow-x: hidden; }
+
+/* Logo & Nav */
+.main-logo { height: 60px !important; width: auto; filter: drop-shadow(0px 2px 5px rgba(0,0,0,0.15)); transition: var(--transition); }
+.main-logo:hover { transform: scale(1.05); }
+
+.glass-nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+.nav-container { max-width: 1200px; margin: 0 auto; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; min-height: 85px; }
+.logo { display: flex; align-items: center; gap: 15px; font-weight: 800; font-size: 1.2rem; }
+.nav-buttons { display: flex; gap: 12px; align-items: center; }
+
+/* Buttons */
+.btn-primary { background: var(--primary); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: var(--transition); }
+.btn-orange { background: var(--orange); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px; }
+.btn-primary:hover, .btn-orange:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+.fb-link { color: #1877f2; transition: var(--transition); }
+.fb-link:hover { transform: scale(1.1); }
+
+/* Hero */
+.hero { position: relative; height: 520px; background: url('https://i.postimg.cc/N00C0ZLX/dsc-0869-0.jpg') center/cover; display: flex; align-items: center; justify-content: center; color: white; text-align: center; }
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(15, 23, 42, 0.7), rgba(37, 99, 235, 0.3)); }
+.hero-content { position: relative; z-index: 2; width: 90%; max-width: 750px; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 15px; }
+.hero-wave { position: absolute; bottom: -1px; left: 0; width: 100%; height: 100px; }
+.hero-wave svg { width: 100%; height: 100%; }
+
+.search-box input { width: 100%; padding: 20px 30px; border-radius: 50px; border: none; font-size: 1.1rem; box-shadow: 0 15px 35px rgba(0,0,0,0.2); outline: none; }
+
+/* Content Grid & Cards */
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; z-index: 5; position: relative; }
+.category-pills { display: flex; justify-content: center; gap: 10px; margin: 30px 0 50px; flex-wrap: wrap; }
+.pill { padding: 12px 24px; border-radius: 50px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-weight: 600; color: var(--text-muted); transition: var(--transition); }
+.pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.ads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 30px; }
+.ad-card { background: white; border-radius: var(--radius-lg); padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); transition: var(--transition); border: 1px solid rgba(0,0,0,0.02); display: flex; flex-direction: column; }
+.ad-card:hover { transform: translateY(-10px); box-shadow: 0 25px 40px -10px rgba(0,0,0,0.1); }
+.ad-card-image { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 15px; }
+
+.category-tag { background: #eff6ff; color: var(--primary); font-size: 0.75rem; font-weight: 800; padding: 5px 15px; border-radius: 50px; text-transform: uppercase; align-self: flex-start; margin-bottom: 10px; }
+.ad-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 15px; border-top: 1px solid #f1f5f9; }
+.price { font-size: 1.3rem; font-weight: 800; }
+.phone { color: var(--primary); font-weight: 700; background: #f0f7ff; padding: 5px 10px; border-radius: 8px; }
+
+/* Modal Styles */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; }
+.modal-card { background: white; padding: 30px; border-radius: 25px; width: 95%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
+.ad-modal-special { max-width: 600px; }
+
+.image-upload-wrapper { position: relative; width: 100%; height: 140px; border: 2px dashed #cbd5e1; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; margin-bottom: 10px; overflow: hidden; }
+.image-upload-wrapper input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10; }
+.image-preview-container img { width: 100%; height: 100%; object-fit: cover; }
+
+.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.field { margin-bottom: 15px; }
+.field label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; color: var(--dark); }
+.field input, .field select, .field textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; font-family: inherit; }
+.btn-submit { width: 100%; padding: 15px; background: var(--dark); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+
+/* Phone List in Modal */
+.phone-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+.phone-item { display: flex; justify-content: space-between; padding: 12px; background: #f1f5f9; border-radius: 12px; }
+.phone-item span { color: var(--primary); font-weight: 800; }
+.btn-close-modal { width: 100%; margin-top: 20px; padding: 12px; background: var(--dark); color: white; border: none; border-radius: 10px; cursor: pointer; }
+
+/* Footer */
+.site-footer { background: var(--dark); color: #94a3b8; padding: 60px 20px; }
+.footer-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; }
+.footer-description { line-height: 1.7; font-size: 0.95rem; text-align: justify; margin-top: 15px; }
+.delete-btn { color: #ef4444; border: none; background: none; cursor: pointer; font-size: 0.7rem; margin-top: 10px; align-self: flex-end; }
+
+/* style.css - Πρόσθεσε αυτά στο τέλος */
+
+/* Flexbox για τα κουμπιά στη φόρμα */
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn-cancel {
+    flex: 1;
+    padding: 15px;
+    background: #e2e8f0;
+    color: #475569;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-cancel:hover {
+    background: #cbd5e1;
+}
+
+.btn-submit {
+    flex: 2; /* Το κουμπί δημοσίευσης είναι μεγαλύτερο */
+}
+
+/* Στυλ για το X κλεισίματος */
+.close-btn {
+    font-size: 2rem;
+    font-weight: 300;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: var(--transition);
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: #ef4444;
+    transform: rotate(90deg);
+}
+
+/* Popup & Comments Styles */
+.ad-view-card { max-width: 700px; }
+.full-ad-image { width: 100%; height: 350px; object-fit: cover; border-radius: 15px; }
+.comments-list { background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 15px; max-height: 200px; overflow-y: auto; }
+.comment-item { background: white; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); }
+.comment-item small { display: block; color: var(--text-muted); font-size: 0.75rem; }
+
+/* Admin List Styles */
+.admin-ad-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; background: white; }
+.admin-ad-item:hover { background: #fcfcfc; }
+.admin-ad-info { display: flex; align-items: center; gap: 10px; }
+.admin-ad-thumb { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; }
+.admin-controls { display: flex; gap: 5px; }
+.btn-edit { background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+
+/* Cursor Pointer για τις αγγελίες */
+.ad-card { cursor: pointer; }
+
+/* Footer Upgrade */
+.main-footer {
+    background: #0f172a;
+    color: white;
+    padding: 60px 20px 30px;
+    margin-top: 50px;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+}
+
+.footer-logo { height: 50px; margin-bottom: 20px; }
+.footer-section h4 { color: var(--orange); margin-bottom: 20px; font-size: 1.1rem; }
+.footer-section ul { list-style: none; }
+.footer-section ul li { margin-bottom: 12px; }
+.footer-section ul li a { 
+    color: #cbd5e1; 
+    text-decoration: none; 
+    transition: 0.3s; 
+    font-size: 0.95rem;
+}
+.footer-section ul li a:hover { color: white; padding-left: 5px; }
+
+.social-icon {
+    display: inline-block;
+    background: #1877f2;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .footer-container { grid-template-columns: 1fr; text-align: center; }
+}
