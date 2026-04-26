@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kamena Vourla Tour Guide</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --accent: #ffd700;
+            --dark: #0a0a0a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-strong: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --base-font-size: 15px;
+            --container-width: 500px; /* Ιδανικό για desktop για να θυμίζει mobile app */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark);
+            color: #f0f0f0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100%;
+            font-size: var(--base-font-size);
+            display: flex;
+            justify-content: center; /* Κεντράρισμα στον υπολογιστή */
+        }
+
+        /* Background με καλλιτεχνικό overlay */
+        .app-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(10,10,10,0.95) 90%),
+                        url('https://i.postimg.cc/RZrM3NXH/images.jpg');
+            background-size: cover; background-position: center;
+            z-index: -1; transition: transform 1.5s cubic-bezier(0.2, 0, 0.2, 1);
+        }
+
+        #brightnessOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; pointer-events: none; z-index: 9999; opacity: 0;
+        }
+
+        /* Main Container για Desktop */
+        .main-wrapper {
+            width: 100%;
+            max-width: var(--container-width);
+            height: 100vh;
+            position: relative;
+            background: rgba(255,255,255,0.02);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .page {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
+            padding: 30px 25px; display: none; flex-direction: column;
+            overflow-y: auto; z-index: 10; padding-bottom: 140px;
+            scrollbar-width: none;
+        }
+        .page::-webkit-scrollbar { display: none; }
+
+        .active-page { display: flex; animation: pageIn 0.7s cubic-bezier(0.2, 0, 0.2, 1); }
+
+        @keyframes pageIn { 
+            from { opacity: 0; transform: translateY(30px) scale(0.98); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+
+        /* Header */
+        .header { margin-bottom: 40px; }
+        .brand { 
+            font-size: 12px; letter-spacing: 5px; font-weight: 300; 
+            text-transform: uppercase; color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero { margin-top: 20px; margin-bottom: 50px; }
+        .hero h1 { 
+            font-family: 'Playfair Display', serif; font-size: 48px; 
+            line-height: 1; margin-bottom: 15px; font-weight: 700;
+        }
+        .hero h1 span { color: var(--primary); font-style: italic; display: block; }
+        .hero p { font-weight: 300; opacity: 0.7; letter-spacing: 1px; font-size: 14px; }
+
+        /* Navigation Cards */
+        .scroll-menu { display: flex; gap: 18px; margin-top: 20px; }
+        .nav-item { 
+            flex: 1; height: 160px; background: var(--glass); 
+            border: 1px solid var(--glass-border); border-radius: 30px; 
+            padding: 25px; display: flex; flex-direction: column; 
+            justify-content: space-between; cursor: pointer;
+            transition: 0.4s ease; backdrop-filter: blur(10px);
+        }
+        .nav-item:active { transform: scale(0.95); background: var(--glass-strong); }
+        .nav-item i { font-size: 24px; color: var(--primary); }
+        .nav-item span { font-weight: 600; font-size: 15px; letter-spacing: 1px; }
+
+        /* Content Cards */
+        .content-card { 
+            background: var(--glass); border: 1px solid var(--glass-border); 
+            padding: 30px 25px; border-radius: 35px; backdrop-filter: blur(20px); 
+            margin-bottom: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        .content-card p { 
+            font-size: var(--base-font-size); line-height: 1.8; 
+            margin-bottom: 20px; text-align: justify; font-weight: 300;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Gallery */
+        .history-gallery { display: flex; gap: 15px; margin-bottom: 30px; }
+        .history-gallery img { 
+            width: 140px; height: 180px; object-fit: cover; 
+            border-radius: 25px; border: 1px solid var(--glass-border);
+            transition: 0.5s ease;
+        }
+        .history-gallery img:hover { transform: translateY(-10px); border-color: var(--primary); }
+
+        /* Back Button */
+        .back-btn { 
+            width: 50px; height: 50px; background: var(--glass); 
+            border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; margin-bottom: 25px; cursor: pointer; 
+            border: 1px solid var(--glass-border); transition: 0.3s;
+        }
+        .back-btn:hover { background: var(--primary); color: var(--dark); }
+
+        /* Action Bar */
+        .action-bar { 
+            position: absolute; bottom: 30px; left: 25px; right: 25px; 
+            background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(25px); 
+            height: 75px; border-radius: 40px; display: flex; 
+            justify-content: space-around; align-items: center; 
+            border: 1px solid var(--glass-border); z-index: 100;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .action-bar i { font-size: 22px; opacity: 0.3; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: white; cursor: pointer; }
+        .action-bar i.active { opacity: 1; color: var(--primary); transform: scale(1.3); }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: absolute; bottom: 120px; right: 25px; width: 240px;
+            background: rgba(10, 10, 10, 0.95); border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 20px; display: none; flex-direction: column;
+            gap: 12px; z-index: 1000; backdrop-filter: blur(30px);
+        }
+        .settings-panel.active { display: flex; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .setting-item { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px 20px; border-radius: 20px; background: var(--glass); 
+            cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .setting-item:hover { background: var(--glass-strong); color: var(--primary); }
+
+    </style>
+</head>
+<body>
+
+    <div id="brightnessOverlay"></div>
+    <div class="app-bg" id="mainBg"></div>
+
+    <div class="main-wrapper">
+        <div class="settings-panel" id="settingsPanel">
+            <div class="setting-item" onclick="changeLanguage()"><span>English</span><i class="fa-solid fa-language"></i></div>
+            <div class="setting-item" onclick="adjustBrightness()"><span>Brightness</span><i class="fa-solid fa-sun"></i></div>
+            <div class="setting-item" onclick="changeFontSize(1)"><span>Zoom In</span><i class="fa-solid fa-plus"></i></div>
+            <div class="setting-item" onclick="changeFontSize(-1)"><span>Zoom Out</span><i class="fa-solid fa-minus"></i></div>
+        </div>
+
+    <div class="page active-page" id="home">
+            <div class="header"><div class="brand">Kamena Vourla <b>Tour Guide</b></div></div>
+            <div class="hero">
+                <h1>Βουνό &<br><span>Θάλασσα.</span></h1>
+                <p>Ανακαλύψτε τα μυστικά της λουτρόπολης μέσα από έναν καλλιτεχνικό οδηγό.</p>
+            </div>
+            <div class="scroll-menu" style="overflow-x: auto; padding-bottom: 20px;">
+                <div class="nav-item" onclick="showPage('history')" style="min-width: 140px;">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Ιστορία</span>
+                </div>
+                <div class="nav-item" onclick="showPage('landmarks')" style="min-width: 140px;">
+                    <i class="fa-solid fa-camera-retro"></i>
+                    <span>Αξιοθέατα</span>
+                </div>
+                <div class="nav-item" onclick="showPage('beaches')" style="min-width: 140px;">
+                    <i class="fa-solid fa-umbrella-beach"></i>
+                    <span>Παραλίες</span>
+                </div>
+                <div class="nav-item" onclick="showPage('food')" style="min-width: 140px;">
+                    <i class="fa-solid fa-utensils"></i>
+                    <span>Εστιατόρια</span>
+                </div>
+                <div class="nav-item" onclick="showPage('stay')" style="min-width: 140px;">
+                    <i class="fa-solid fa-bed"></i>
+                    <span>Διαμονή</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="landmarks">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Αξιοθέατα</h2>
+            <div class="content-card">
+                <p><b>Ιερά Μονή Μεταμορφώσεως του Σωτήρος:</b> Ένα βυζαντινό κόσμημα του 11ου αιώνα με πανοραμική θέα[cite: 7].</p>
+                <p><b>Άγαλμα Λεωνίδα (Θερμοπύλες):</b> Σε απόσταση αναπνοής βρίσκεται το σημείο της ιστορικής μάχης[cite: 9].</p>
+            </div>
+        </div>
+
+        <div class="page" id="beaches">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Παραλίες</h2>
+            <div class="content-card">
+                <p><b>Λιχαδονήσια:</b> Οι "Σεϋχέλλες της Ελλάδας" με τα κρυστάλλινα νερά.</p>
+                <p><b>Ασπρονέρι:</b> Μια από τις πιο γνωστές και καθαρές παραλίες της περιοχής.</p>
+            </div>
+        </div>
+
+        <div class="page" id="food">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Εστιατόρια</h2>
+            <div class="content-card"><p>Ανακαλύψτε τις γεύσεις της Φθιώτιδας δίπλα στο κύμα.</p></div>
+        </div>
+
+        <div class="page" id="stay">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Διαμονή</h2>
+            <div class="content-card"><p>Από ιστορικά ξενοδοχεία μέχρι μοντέρνα καταλύματα ευεξίας.</p></div>
+        </div>
+
+        <div class="page" id="history">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Το Ταξίδι μας</h2>
+            
+            <div class="history-gallery">
+                <img src="https://i.postimg.cc/gJYTJ1Ts/kamena-vourla.jpg">
+                <img src="https://i.postimg.cc/fy1CxP8s/R.jpg">
+            </div>
+
+            <div class="content-card">
+                <p>Τα Καμένα Βούρλα είναι μια παραθαλάσσια κωμόπολη της Στερεάς Ελλάδας που μοιάζει να ισορροπεί ανάμεσα στο γαλάζιο του Ευβοϊκού και το βαθυπράσινο του όρους Κνημίς. Η μοναδική τους τοποθεσία τα κατέστησε αγαπημένο θέρετρο ήδη από τις δεκαετίες του '60 και '70, διατηρώντας μέχρι σήμερα μια αύρα κλασικής κομψότητας.</p>
+
+                <p>Η ιστορία τους χάνεται στα βάθη των αιώνων, με τη Μονή της Μεταμορφώσεως του Σωτήρος να στέκει επιβλητική από τον 11ο αιώνα, ενώ ο θρύλος του γίγαντα Λίχα προσδίδει μια μυθική διάσταση στα καταπράσινα νερά των Λιχαδονησίων που απλώνονται στον ορίζοντα.</p>
+
+                <p>Το όνομα της πόλης, "Καμένα Βούρλα", κουβαλά τη δική του ποιητική ιστορία. Είτε μέσα από τη σωτηρία των κατοίκων στα πυκνά βούρλα κατά την Τουρκοκρατία, είτε από την αποστράγγιση της ελώδους γης, η ονομασία αυτή επισημοποιήθηκε το 1912, σφραγίζοντας την ταυτότητα του τόπου.</p>
+
+                <p>Η αληθινή "καρδιά" της πόλης όμως χτυπά στις ιαματικές πηγές της. Από το 1926, όταν ανακαλύφθηκε η σπάνια περιεκτικότητά τους σε ραδόνιο, τα Καμένα Βούρλα μεταμορφώθηκαν σε έναν διεθνή προορισμό ευεξίας, προσφέροντας θεραπεία και γαλήνη σε χιλιάδες επισκέπτες.</p>
+            </div>
+        </div>
+
+        <div class="page" id="useful">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Επικοινωνία</h2>
+            <div class="content-card">
+                <p style="display: flex; justify-content: space-between;"><b>Αστυνομία:</b> <span>22350 22222</span></p>
+                <p style="display: flex; justify-content: space-between;"><b>Κέντρο Υγείας:</b> <span>22353 50000</span></p>
+                <p style="display: flex; justify-content: space-between;"><b>Δήμος:</b> <span>22353 50600</span></p>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <i class="fa-solid fa-house active" onclick="showPage('home')"></i>
+            <i class="fa-solid fa-phone" onclick="showPage('useful')"></i>
+            <i class="fa-solid fa-sliders" onclick="toggleSettings()"></i>
+        </div>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+            
+            // Animation στο background
+            const bg = document.getElementById('mainBg');
+            bg.style.transform = pageId === 'home' ? "scale(1) rotate(0deg)" : "scale(1.1) rotate(1deg)";
+            
+            document.getElementById('settingsPanel').classList.remove('active');
+            
+            document.querySelectorAll('.action-bar i').forEach(i => i.classList.remove('active'));
+            if(pageId === 'home') document.querySelector('.fa-house').classList.add('active');
+            if(pageId === 'useful') document.querySelector('.fa-phone').classList.add('active');
+        }
+
+        function toggleSettings() { 
+            document.getElementById('settingsPanel').classList.toggle('active'); 
+        }
+
+        let brightnessLevel = 0;
+        function adjustBrightness() {
+            brightnessLevel += 0.2; if (brightnessLevel > 0.7) brightnessLevel = 0;
+            document.getElementById('brightnessOverlay').style.opacity = brightnessLevel;
+        }
+
+        let currentFontSize = 15;
+        function changeFontSize(action) {
+            currentFontSize += (action * 1);
+            if(currentFontSize < 12) currentFontSize = 12;
+            if(currentFontSize > 20) currentFontSize = 20;
+            document.documentElement.style.setProperty('--base-font-size', currentFontSize + 'px');
+        }
+
+        function changeLanguage() { alert("Language: Greek / English Toggle"); }
+    </script>
+</body>
+</html>
