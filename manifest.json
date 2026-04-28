@@ -1,0 +1,20 @@
+{
+  "name": "Kamena Vourla Tour Guide",
+  "short_name": "KV Guide",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#00d2ff",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/RZrM3NXH/images.jpg",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.postimg.cc/RZrM3NXH/images.jpg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
