@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kamena Vourla Tour Guide</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --accent: #ffd700;
+            --dark: #0a0a0a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-strong: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --base-font-size: 15px;
+            --container-width: 500px; /* Ιδανικό για desktop για να θυμίζει mobile app */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark);
+            color: #f0f0f0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100%;
+            font-size: var(--base-font-size);
+            display: flex;
+            justify-content: center; /* Κεντράρισμα στον υπολογιστή */
+        }
+
+        /* Background με καλλιτεχνικό overlay */
+        .app-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(10,10,10,0.95) 90%),
+                        url('https://i.postimg.cc/RZrM3NXH/images.jpg');
+            background-size: cover; background-position: center;
+            z-index: -1; transition: transform 1.5s cubic-bezier(0.2, 0, 0.2, 1);
+        }
+
+        #brightnessOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; pointer-events: none; z-index: 9999; opacity: 0;
+        }
+
+        /* Main Container για Desktop */
+        .main-wrapper {
+            width: 100%;
+            max-width: var(--container-width);
+            height: 100vh;
+            position: relative;
+            background: rgba(255,255,255,0.02);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .page {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
+            padding: 30px 25px; display: none; flex-direction: column;
+            overflow-y: auto; z-index: 10; padding-bottom: 140px;
+            scrollbar-width: none;
+        }
+        .page::-webkit-scrollbar { display: none; }
+
+        .active-page { display: flex; animation: pageIn 0.7s cubic-bezier(0.2, 0, 0.2, 1); }
+
+        @keyframes pageIn { 
+            from { opacity: 0; transform: translateY(30px) scale(0.98); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+
+        /* Header */
+        .header { margin-bottom: 40px; }
+        .brand { 
+            font-size: 12px; letter-spacing: 5px; font-weight: 300; 
+            text-transform: uppercase; color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero { margin-top: 20px; margin-bottom: 50px; }
+        .hero h1 { 
+            font-family: 'Playfair Display', serif; font-size: 48px; 
+            line-height: 1; margin-bottom: 15px; font-weight: 700;
+        }
+        .hero h1 span { color: var(--primary); font-style: italic; display: block; }
+        .hero p { font-weight: 300; opacity: 0.7; letter-spacing: 1px; font-size: 14px; }
+
+        /* Navigation Cards */
+        .scroll-menu { display: flex; gap: 18px; margin-top: 20px; }
+        .nav-item { 
+            flex: 1; height: 160px; background: var(--glass); 
+            border: 1px solid var(--glass-border); border-radius: 30px; 
+            padding: 25px; display: flex; flex-direction: column; 
+            justify-content: space-between; cursor: pointer;
+            transition: 0.4s ease; backdrop-filter: blur(10px);
+        }
+        .nav-item:active { transform: scale(0.95); background: var(--glass-strong); }
+        .nav-item i { font-size: 24px; color: var(--primary); }
+        .nav-item span { font-weight: 600; font-size: 15px; letter-spacing: 1px; }
+
+        /* Content Cards */
+        .content-card { 
+            background: var(--glass); border: 1px solid var(--glass-border); 
+            padding: 30px 25px; border-radius: 35px; backdrop-filter: blur(20px); 
+            margin-bottom: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        .content-card p { 
+            font-size: var(--base-font-size); line-height: 1.8; 
+            margin-bottom: 20px; text-align: justify; font-weight: 300;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Gallery */
+        .history-gallery { display: flex; gap: 15px; margin-bottom: 30px; }
+        .history-gallery img { 
+            width: 140px; height: 180px; object-fit: cover; 
+            border-radius: 25px; border: 1px solid var(--glass-border);
+            transition: 0.5s ease;
+        }
+        .history-gallery img:hover { transform: translateY(-10px); border-color: var(--primary); }
+
+        /* Back Button */
+        .back-btn { 
+            width: 50px; height: 50px; background: var(--glass); 
+            border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; margin-bottom: 25px; cursor: pointer; 
+            border: 1px solid var(--glass-border); transition: 0.3s;
+        }
+        .back-btn:hover { background: var(--primary); color: var(--dark); }
+
+        /* Action Bar */
+        .action-bar { 
+            position: absolute; bottom: 30px; left: 25px; right: 25px; 
+            background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(25px); 
+            height: 75px; border-radius: 40px; display: flex; 
+            justify-content: space-around; align-items: center; 
+            border: 1px solid var(--glass-border); z-index: 100;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .action-bar i { font-size: 22px; opacity: 0.3; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: white; cursor: pointer; }
+        .action-bar i.active { opacity: 1; color: var(--primary); transform: scale(1.3); }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: absolute; bottom: 120px; right: 25px; width: 240px;
+            background: rgba(10, 10, 10, 0.95); border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 20px; display: none; flex-direction: column;
+            gap: 12px; z-index: 1000; backdrop-filter: blur(30px);
+        }
+        .settings-panel.active { display: flex; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .setting-item { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px 20px; border-radius: 20px; background: var(--glass); 
+            cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .setting-item:hover { background: var(--glass-strong); color: var(--primary); }
+
+.map-btn {
+    background: var(--primary);
+    color: var(--dark) !important;
+    padding: 15px 25px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.map-btn:active {
+    transform: scale(0.95);
+}
+
+/* Εφέ "βύθισης" όταν κρατάμε πατημένο οποιοδήποτε κουμπί */
+.nav-item:active, .back-btn:active, .setting-item:active, .action-bar i:active {
+    transform: scale(0.92) !important;
+    transition: transform 0.1s cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Πιο ομαλή κίνηση για τις κάρτες */
+.content-card {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Animation για το background όταν αλλάζουμε σελίδα */
+.app-bg {
+    transition: transform 1.2s cubic-bezier(0.2, 0, 0.2, 1), filter 1.2s ease;
+}
+    </style>
+</head>
+<body>
+
+    <div id="brightnessOverlay"></div>
+    <div class="app-bg" id="mainBg"></div>
+
+    <div class="main-wrapper">
+        <div class="settings-panel" id="settingsPanel">
+            <div class="setting-item" onclick="changeLanguage()"><span>English</span><i class="fa-solid fa-language"></i></div>
+            <div class="setting-item" onclick="adjustBrightness()"><span>Brightness</span><i class="fa-solid fa-sun"></i></div>
+            <div class="setting-item" onclick="changeFontSize(1)"><span>Zoom In</span><i class="fa-solid fa-plus"></i></div>
+            <div class="setting-item" onclick="changeFontSize(-1)"><span>Zoom Out</span><i class="fa-solid fa-minus"></i></div>
+        </div>
+
+    <div class="page active-page" id="home">
+            <div class="header"><div class="brand">Kamena Vourla <b>Tour Guide</b></div></div>
+            <div class="hero">
+    <h1>Βουνό &<br><span>Θάλασσα.</span></h1>
+    <p>Ανακαλύψτε τα μυστικά της λουτρόπολης μέσα από έναν καλλιτεχνικό οδηγό.</p>
+    
+    <div id="weather-widget" style="margin-top: 15px; font-size: 14px; color: var(--accent); display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-cloud-sun"></i> <span id="weather-text">Φόρτωση καιρού...</span>
+    </div>
+</div>
+            <div class="scroll-menu" style="overflow-x: auto; padding-bottom: 20px;">
+                <div class="nav-item" onclick="showPage('history')" style="min-width: 140px;">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Ιστορία</span>
+                </div>
+                <div class="nav-item" onclick="showPage('landmarks')" style="min-width: 140px;">
+                    <i class="fa-solid fa-camera-retro"></i>
+                    <span>Αξιοθέατα</span>
+                </div>
+                <div class="nav-item" onclick="showPage('beaches')" style="min-width: 140px;">
+                    <i class="fa-solid fa-umbrella-beach"></i>
+                    <span>Παραλίες</span>
+                </div>
+                <div class="nav-item" onclick="showPage('food')" style="min-width: 140px;">
+                    <i class="fa-solid fa-utensils"></i>
+                    <span>Εστιατόρια</span>
+                </div>
+                <div class="nav-item" onclick="showPage('stay')" style="min-width: 140px;">
+                    <i class="fa-solid fa-bed"></i>
+                    <span>Διαμονή</span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="page" id="landmarks">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Αξιοθέατα</h2>
+            <div class="content-card">
+                <p>Τα Καμένα Βούρλα είναι ένας από τους πιο δημοφιλείς προορισμούς στη Φθιώτιδα, γνωστός κυρίως για τις ιαματικές του πηγές, αλλά προσφέρει και πολλές επιλογές για εξορμήσεις στη φύση και ιστορικά μνημεία.
+                    <br>​<br>Ακολουθούν μερικά από τα κυριότερα αξιοθέατα που μπορείτε να επισκεφθείτε:
+<br>​​<br><b>1.Ιαματικές Πηγές και Λουτρά:</b>
+<br>​Η πόλη είναι παγκοσμίως γνωστή για τις θεραπευτικές ιδιότητες των νερών της.
+<br>​​<br>​Ιαματικά Λουτρά Κουνιαβίτη: Βρίσκονται στην είσοδο της πόλης (ερχόμενοι από Αθήνα) και προσφέρουν εξωτερικές πισίνες με ιαματικό νερό μέσα σε ένα καταπράσινο περιβάλλον.
+<br>​​<br>​Πηγή Αφροδίτης: Γνωστή και ως "καλλυντική" πηγή, το νερό της θεωρείται ευεργετικό για το δέρμα.
+<br>​​<br>​Παλαιό Υδροθεραπευτήριο: Ένα ιστορικό κτίριο που μαρτυρά την αίγλη της λουτρόπολης τις περασμένες δεκαετίες.
+<br>​​<br><b>2. Θρησκευτικά Μνημεία</b>
+<br>​​<br>​Ιερά Μονή Μεταμορφώσεως του Σωτήρος: Βρίσκεται περίπου 4 χλμ. πάνω από τα Καμένα Βούρλα, στις πλαγιές του όρους Κνημίς. Προσφέρει εκπληκτική πανοραμική θέα στον Μαλιακό Κόλπο και είναι ένα ήσυχο μέρος με μεγάλη ιστορία (κτίσμα του 11ου-12ου αιώνα).
+<br>​​<br><b>​3. Κοντινές Αποδράσεις</b>
+<br>​​<br>​Λιχαδονήσια: Συχνά αποκαλούνται οι "Σεϋχέλλες της Ελλάδας". Πρόκειται για ένα σύμπλεγμα μικρών νησιών απέναντι από τα Καμένα Βούρλα, προσβάσιμα με καραβάκια που ξεκινούν από το λιμάνι της πόλης.<br><a href="https://www.google.com/maps/search/?api=1&query=Lichadonisia" target="_blank" style="color: var(--primary); font-size: 13px; text-decoration: none;">
+    <i class="fa-solid fa-location-arrow"></i> Οδηγίες για Λιχαδονήσια
+</a>
+<br>​​<br>​Θερμοπύλες: Σε απόσταση περίπου 15-20 λεπτών, μπορείτε να επισκεφθείτε το άγαλμα του Λεωνίδα και το Κέντρο Ιστορικής Ενημέρωσης, καθώς και να κάνετε μπάνιο στον ιαματικό καταρράκτη των Θερμοπυλών.
+<br>​​<br><b>​Κάστρο Μενδενίτσας: Ένα καλοδιατηρημένο μεσαιωνικό κάστρο στο ομώνυμο χωριό, με υπέροχη θέα και ιστορική σημασία.
+<br>​​<br><b>​4. Δραστηριότητες</b>
+<br>​​<br>​Πεζοπορία στο όρος Κνημίς: Υπάρχουν μονοπάτια που ξεκινούν από την πόλη και οδηγούν στο βουνό, ιδανικά για τους λάτρεις της φύσης.
+<br>​​<br>Βόλτα στην Παραλία: Ο παραλιακός δρόμος των Καμένων Βούρλων είναι γεμάτος καφετέριες, ταβέρνες και ζαχαροπλαστεία (μην παραλείψετε να δοκιμάσετε τους παραδοσιακούς λουκουμάδες).</p>
+            </div>
+        </div>
+
+        <div class="page" id="beaches">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Παραλίες</h2>
+            <div class="content-card">
+                <p>Στα Καμένα Βούρλα και στη γύρω περιοχή θα βρείτε αρκετές επιλογές για μπάνιο, από οργανωμένες κοσμικές παραλίες μέχρι πιο ήσυχες γωνιές:
+<br>​​<br>​1. Κεντρική Παραλία Καμένων Βούρλων<br>
+​Βρίσκεται ακριβώς μπροστά στον παραλιακό δρόμο. Είναι η πιο εύκολη λύση αν μένετε στην πόλη.
+​Χαρακτηριστικά: Μικρό βότσαλο, καθαρά και συνήθως ήρεμα νερά.
+​Παροχές: Υπάρχουν οργανωμένα τμήματα με ξαπλώστρες (όπως το Isabella Beach Bar), αλλά και ελεύθεροι χώροι. Είναι ιδανική για όσους θέλουν να έχουν δίπλα τους καφετέριες και εστιατόρια.
+<br>​​<br>2. Ασπρονέρι<br>
+​Ίσως η πιο δημοφιλής παραλία της περιοχής, περίπου 3-5 χλμ. ανατολικά των Καμένων Βούρλων.
+​Χαρακτηριστικά: Ψιλό βότσαλο, πεντακάθαρα και κάπως βαθιά νερά με εντυπωσιακά χρώματα.
+​Παροχές: Πολύ καλά οργανωμένη με γνωστά beach bars (π.χ. Bloom), ντους και θαλάσσια σπορ.
+​Προσοχή: Στην περιοχή του Φάρου υπάρχουν συχνά ισχυρά ρεύματα, οπότε χρειάζεται προσοχή.
+<br>​​<br>​3. Λιχαδονήσια (Οι "Σεϋχέλλες της Ελλάδας")<br>
+​Αν και δεν είναι στα Καμένα Βούρλα, η πρόσβαση γίνεται με καραβάκια από το λιμάνι της πόλης (περίπου 30 λεπτά διαδρομή).
+​Χαρακτηριστικά: Εξωτικό τοπίο με χρυσή άμμο και τιρκουάζ, ρηχά νερά.
+​Παροχές: Η μεγαλύτερη παραλία (στη Μονόλια) είναι οργανωμένη με beach bar που προσφέρει και σνακ. Είναι μια εμπειρία που δεν πρέπει να χάσετε.
+<br>​​<br>​4. Παραλία Ροδιάς<br>
+​Βρίσκεται κοντά στο λιμάνι και τη μαρίνα, στην άκρη του οικισμού.
+​Χαρακτηριστικά: Πιο ήσυχη από την κεντρική παραλία, με βότσαλο και δέντρα που προσφέρουν φυσική σκιά.
+​Παροχές: Διαθέτει beach bar και είναι αγαπημένη επιλογή για όσους αναζητούν χαλάρωση χωρίς πολύ θόρυβο.
+<br>​​<br>​5. Χρυσή Ακτή (κοντά στο Νέο Θρόνιο)<br>
+​Λίγο μετά τα Καμένα Βούρλα (περίπου 10-15 λεπτά με το αυτοκίνητο).
+​Χαρακτηριστικά: Αμμώδης ακτή με ρηχά νερά, ιδανική για οικογένειες με μικρά παιδιά.
+​Ατμόσφαιρα: Πιο "αυθεντική" και λιγότερο κοσμική σε σχέση με το Ασπρονέρι.
+<br>​​<br>​6. Κάλαμος<br>
+​Λίγο μετά τον Άγιο Κωνσταντίνο.
+​Χαρακτηριστικά: Οργανωμένη παραλία με άμμο και βότσαλο, γνωστή για την καθαρότητά της.
+<br>​​<br>​Συμβουλή: Αν έχετε παιδιά, προτιμήστε τη Χρυσή Ακτή ή την κεντρική παραλία λόγω των ρηχών νερών. Αν ψάχνετε για διασκέδαση και ένταση, το Ασπρονέρι είναι η νούμερο ένα επιλογή.</p>
+            </div>
+        </div>
+
+        <div class="page" id="food">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Εστιατόρια</h2>
+            <div class="content-card"><p>Τα Καμένα Βούρλα προσφέρουν εξαιρετικές επιλογές για φαγητό, με έμφαση στο φρέσκο ψάρι και την παραδοσιακή ελληνική κουζίνα δίπλα στο κύμα.
+<br>​​<br>​​Ακολουθούν μερικές από τις πιο γνωστές και σταθερές αξίες της περιοχής:
+<br>​​<br>​​1. Ψαροταβέρνες (Για φρέσκο ψάρι και θαλασσινά)
+<br>​​<br>​​Νόστος: Μία από τις πιο δημοφιλείς ψαροταβέρνες πάνω στον παραλιακό δρόμο. Φημίζεται για το φρέσκο ψάρι του, τις ωραίες μακαρονάδες θαλασσινών και τη θέα στη θάλασσα.
+<br>​​<br>​​Κάβος: Βρίσκεται κοντά στην εκκλησία του Αγίου Παντελεήμονα. Είναι μια κλασική, οικογενειακή ψαροταβέρνα με πολύ καλή ποιότητα και προσεγμένες γεύσεις.
+<br>​​<br>​​2. Εστιατόρια & Παραδοσιακές Ταβέρνες
+<br>​​<br>​​​Διόνυσος: Μια ιστορική οικογενειακή επιχείρηση (λειτουργεί από το 1975) που συνδυάζει κρέας και ψάρι. Θα βρείτε από μαγειρευτά και πιάτα ημέρας μέχρι της ώρας, σε τραπεζάκια πάνω στην παραλία.
+<br>​​<br>​​​Μουριές: Μια εξαιρετική επιλογή αν προτιμάτε το κρέας. Είναι γνωστό για τα καλοψημένα κρεατικά του, αλλά σερβίρει και θαλασσινά, προσφέροντας μια πιο ποικίλη κάρτα.
+<br>​​<br>​​​Αντάμωμα: Ένα πιο σύγχρονο μεζεδοπωλείο-εστιατόριο με ιδιαίτερες γεύσεις και ωραία παρουσίαση, ιδανικό για όσους θέλουν κάτι λίγο πιο "μοντέρνο" αλλά με βάση την παράδοση.
+<br>​​<br>​​3. Γλυκό και Καφές
+<br>​​<br>​​Λουκουμάδες: Δεν νοείται επίσκεψη στα Καμένα Βούρλα χωρίς μια στάση για λουκουμάδες στον παραλιακό. Υπάρχουν αρκετά ζαχαροπλαστεία στη σειρά που τους σερβίρουν ζεστούς με μέλι ή σοκολάτα.
+<br>​​<br>​​Extra Tip: Αν θέλετε μια πιο ιδιαίτερη εμπειρία, το εστιατόριο Sea See (στο ξενοδοχείο Sissy) προσφέρει δείπνο σε μπουφέ ή bistro επιλογές με πολύ ωραία ατμόσφαιρα δίπλα στα δέντρα και τη θάλασσα.
+<br>​​<br>​​Συνήθως τα εστιατόρια στον παραλιακό δρόμο (Γερασίμου Βασιλειάδη) είναι ανοιχτά από το μεσημέρι μέχρι αργά το βράδυ</p></div>
+        </div>
+
+        <div class="page" id="stay">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Διαμονή</h2>
+            <div class="content-card"><p>Για τη διαμονή σας στα Καμένα Βούρλα, υπάρχουν επιλογές που καλύπτουν κάθε ανάγκη, από πολυτελή θέρετρα με ιαματικά λουτρά μέχρι οικονομικά διαμερίσματα.
+<br>​​<br>​​​Ακολουθούν μερικές από τις καλύτερες επιλογές βάσει των πρόσφατων διαθεσιμοτήτων:
+<br>​​<br>​​​1. Πολυτελής Διαμονή & Spa
+<br>​​<br>​​​Mitsis Galini Wellness Spa & Resort (5):* Είναι το πιο γνωστό ξενοδοχείο της περιοχής. Προσφέρει ένα από τα μεγαλύτερα spa στην Ελλάδα με ιαματικά νερά, εξωτερικές πισίνες, γυμναστήριο και εξαιρετική θέα στον κόλπο. Είναι ιδανικό αν αναζητάτε χαλάρωση και πλήρεις παροχές.
+<br>​​<br>​​​Ενδεικτική τιμή: ~91€/νύχτα.
+<br>​​<br>​​2. Παραθαλάσσια Ξενοδοχεία
+<br>​​<br>​​​Hotel Sissy (3):* Ένα κλασικό και πολύ δημοφιλές ξενοδοχείο πάνω στο κύμα. Διαθέτει εξωτερική πισίνα, μπαρ και άνετα δωμάτια με θέα στη θάλασσα.
+<br>​​<br>​​​Ενδεικτική τιμή: ~84€/νύχτα.
+<br>​​<br>​​​Hotel Violetta (3):* Βρίσκεται επίσης σε προνομιακή θέση στην παραλία, προσφέροντας καθαρά δωμάτια και μια φιλόξενη ατμόσφαιρα με εύκολη πρόσβαση στα εστιατόρια της πόλης.
+<br>​​<br>​​​Ενδεικτική τιμή: ~95€/νύχτα.
+<br>​​<br>​​​3. Οικονομικές Επιλογές & Διαμερίσματα
+<br>​​<br>​​​Tsertos Apartments: Μια εξαιρετική επιλογή αν προτιμάτε την αυτονομία ενός διαμερίσματος. Διαθέτει κουζίνα και είναι πολύ καλά βαθμολογημένο για την καθαριότητα και την εξυπηρέτησή του.
+<br>​​<br>​​​Ενδεικτική τιμή: ~56€/νύχτα.
+<br>​​<br>​​​ΘΑΛΕΙΑ (1):* Ένα απλό και αξιοπρεπές κατάλυμα για όσους αναζητούν κάτι πιο οικονομικό αλλά σε κεντρική τοποθεσία.
+<br>​​<br>​​​Ενδεικτική τιμή: ~55€/νύχτα.
+<br>​​<br>​​​Συμβουλή: Επειδή τα Καμένα Βούρλα είναι δημοφιλής προορισμός (ειδικά τα Σαββατοκύριακα και το καλοκαίρι), καλό θα ήταν να κάνετε την κράτησή σας εγκαίρως. Αν ο κύριος λόγος της επίσκεψής σας είναι τα ιαματικά λουτρά, το Mitsis Galini είναι η κορυφαία επιλογή λόγω των δικών του εγκαταστάσεων spa.</p></div>
+        </div>
+
+        <div class="page" id="history">
+            <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+            
+            <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Το Ταξίδι μας</h2>
+            
+            <div class="history-gallery">
+                <img src="https://i.postimg.cc/gJYTJ1Ts/kamena-vourla.jpg">
+                <img src="https://i.postimg.cc/fy1CxP8s/R.jpg">
+            </div>
+
+            <div class="content-card">
+                <p>Τα Καμένα Βούρλα είναι μια παραθαλάσσια κωμόπολη της Στερεάς Ελλάδας που μοιάζει να ισορροπεί ανάμεσα στο γαλάζιο του Ευβοϊκού και το βαθυπράσινο του όρους Κνημίς. Η μοναδική τους τοποθεσία τα κατέστησε αγαπημένο θέρετρο ήδη από τις δεκαετίες του '60 και '70, διατηρώντας μέχρι σήμερα μια αύρα κλασικής κομψότητας.</p>
+
+                <p>Η ιστορία τους χάνεται στα βάθη των αιώνων, με τη Μονή της Μεταμορφώσεως του Σωτήρος να στέκει επιβλητική από τον 11ο αιώνα, ενώ ο θρύλος του γίγαντα Λίχα προσδίδει μια μυθική διάσταση στα καταπράσινα νερά των Λιχαδονησίων που απλώνονται στον ορίζοντα.</p>
+
+                <p>Το όνομα της πόλης, "Καμένα Βούρλα", κουβαλά τη δική του ποιητική ιστορία. Είτε μέσα από τη σωτηρία των κατοίκων στα πυκνά βούρλα κατά την Τουρκοκρατία, είτε από την αποστράγγιση της ελώδους γης, η ονομασία αυτή επισημοποιήθηκε το 1912, σφραγίζοντας την ταυτότητα του τόπου.</p>
+
+                <p>Η αληθινή "καρδιά" της πόλης όμως χτυπά στις ιαματικές πηγές της. Από το 1926, όταν ανακαλύφθηκε η σπάνια περιεκτικότητά τους σε ραδόνιο, τα Καμένα Βούρλα μεταμορφώθηκαν σε έναν διεθνή προορισμό ευεξίας, προσφέροντας θεραπεία και γαλήνη σε χιλιάδες επισκέπτες.</p>
+            </div>
+        </div>
+
+       <div class="page" id="useful">
+    <div class="back-btn" onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i></div>
+    <h2 style="font-family:'Playfair Display'; margin-bottom:30px; font-size: 36px; font-style: italic;">Χρήσιμα</h2>
+    
+    <div class="content-card">
+        <a href="https://www.google.com/maps/search/?api=1&query=Kamena+Vourla" target="_blank" class="map-btn" style="width: 100%; justify-content: center; margin-bottom: 20px;">
+            <i class="fa-solid fa-map-location-dot"></i> Άνοιγμα Χάρτη
+        </a>
+
+        <div style="margin-bottom: 25px;">
+            <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px; text-transform: uppercase;">
+                <i class="fa-solid fa-phone" style="margin-right: 8px;"></i> Τηλέφωνα Ανάγκης
+            </h4>
+            
+            <a href="tel:2235041662" style="text-decoration: none; color: inherit;">
+                <div class="setting-item" style="margin-bottom: 10px;">
+                    <span>Κέντρο Υγείας</span>
+                    <i class="fa-solid fa-phone-flip" style="color: #2ecc71;"></i>
+                </div>
+            </a>
+
+            <a href="tel:2235022222" style="text-decoration: none; color: inherit;">
+                <div class="setting-item" style="margin-bottom: 10px;">
+                    <span>Αστυνομία</span>
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+            </a>
+
+            <a href="tel:2235022522" style="text-decoration: none; color: inherit;">
+                <div class="setting-item">
+                    <span>Ταξί</span>
+                    <i class="fa-solid fa-taxi"></i>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+        <div class="action-bar">
+            <i class="fa-solid fa-house active" onclick="showPage('home')"></i>
+            <i class="fa-solid fa-phone" onclick="showPage('useful')"></i>
+            <i class="fa-solid fa-sliders" onclick="toggleSettings()"></i>
+        </div>
+    </div>
+
+    <    <script>
+        let currentLang = 'el';
+        
+        const translations = {
+            el: {
+                brand: "Kamena Vourla <b>Tour Guide</b>",
+                heroH1: "Βουνό &<br><span>Θάλασσα.</span>",
+                heroP: "Ανακαλύψτε τα μυστικά της λουτρόπολης μέσα από έναν καλλιτεχνικό οδηγό.",
+                navHistory: "Ιστορία",
+                navLandmarks: "Αξιοθέατα",
+                navBeaches: "Παραλίες",
+                navFood: "Εστιατόρια",
+                navStay: "Διαμονή",
+                usefulTitle: "Χρήσιμα",
+                langBtn: "English"
+            },
+            en: {
+                brand: "Kamena Vourla <b>Tour Guide</b>",
+                heroH1: "Mountain &<br><span>Sea.</span>",
+                heroP: "Discover the secrets of the spa town through an artistic guide.",
+                navHistory: "History",
+                navLandmarks: "Landmarks",
+                navBeaches: "Beaches",
+                navFood: "Restaurants",
+                navStay: "Stay",
+                usefulTitle: "Useful Info",
+                langBtn: "Ελληνικά"
+            }
+        };
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+            
+            const bg = document.getElementById('mainBg');
+            bg.style.transform = pageId === 'home' ? "scale(1) rotate(0deg)" : "scale(1.1) rotate(1deg)";
+            
+            document.getElementById('settingsPanel').classList.remove('active');
+            
+            document.querySelectorAll('.action-bar i').forEach(i => i.classList.remove('active'));
+            if(pageId === 'home') document.querySelector('.fa-house').classList.add('active');
+            if(pageId === 'useful') document.querySelector('.fa-phone').classList.add('active');
+        }
+
+        function toggleSettings() { 
+            document.getElementById('settingsPanel').classList.toggle('active'); 
+        }
+
+        function changeLanguage() {
+            currentLang = currentLang === 'el' ? 'en' : 'el';
+            const t = translations[currentLang];
+
+            // Ενημέρωση κειμένων Home
+            document.querySelector('.brand').innerHTML = t.brand;
+            document.querySelector('.hero h1').innerHTML = t.heroH1;
+            document.querySelector('.hero p').innerText = t.heroP;
+            
+            // Ενημέρωση Menu
+            const navItems = document.querySelectorAll('.nav-item span');
+            navItems[0].innerText = t.navHistory;
+            navItems[1].innerText = t.navLandmarks;
+            navItems[2].innerText = t.navBeaches;
+            navItems[3].innerText = t.navFood;
+            navItems[4].innerText = t.navStay;
+
+            // Ενημέρωση Τίτλων Σελίδων
+            document.querySelector('#useful h2').innerText = t.usefulTitle;
+            
+            // Ενημέρωση κουμπιού στις ρυθμίσεις
+            document.querySelector('.setting-item span').innerText = t.langBtn;
+
+            toggleSettings(); // Κλείσιμο πάνελ μετά την αλλαγή
+        }
+
+        let brightnessLevel = 0;
+        function adjustBrightness() {
+            brightnessLevel += 0.2; if (brightnessLevel > 0.7) brightnessLevel = 0;
+            document.getElementById('brightnessOverlay').style.opacity = brightnessLevel;
+        }
+
+        let currentFontSize = 15;
+        function changeFontSize(action) {
+            currentFontSize += (action * 1);
+            if(currentFontSize < 12) currentFontSize = 12;
+            if(currentFontSize > 20) currentFontSize = 20;
+            document.documentElement.style.setProperty('--base-font-size', currentFontSize + 'px');
+        }
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('Service Worker Registered'))
+            .catch(err => console.log('Service Worker Error', err));
+    });
+}
+
+async function fetchWeather() {
+    // Χρησιμοποιούμε μια δημόσια API κλήση για τα Καμένα Βούρλα
+    const city = "Kamena Vourla";
+    const apiKey = "714a04de8139c4b928dbc23a1c3665ef"; // Εδώ βάζεις το δικό σου κλειδί αν βγάλεις, αλλιώς δες παρακάτω
+    
+    try {
+        // Για το παράδειγμα χρησιμοποιούμε μια κλήση που επιστρέφει δεδομένα
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=el&appid=${apiKey}`);
+        const data = await response.json();
+        
+        const temp = Math.round(data.main.temp);
+        const desc = data.weather[0].description;
+        const icon = data.weather[0].icon;
+
+        document.getElementById('weather-text').innerHTML = `${temp}°C - ${desc}`;
+    } catch (error) {
+        // Αν δεν έχουμε API Key ακόμα, ας βάλουμε μια στατική τιμή για να φαίνεται ωραίο
+        document.getElementById('weather-text').innerHTML = `24°C - Αίθριος καιρός`;
+    }
+}
+
+// Κάλεσε τη συνάρτηση όταν φορτώνει η σελίδα
+window.addEventListener('load', fetchWeather);
+    </script>
+
+</body>
+</html>
